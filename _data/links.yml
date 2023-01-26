@@ -1,7 +1,7 @@
 # links
-- url: "Primero Labs"
-  description: https://www.primerolabs.com
-- url: "Open Data Blog"
-  description: https://www.opendata.blog
-- url: "First Born Media"
-  description: https://www.firstbornmedia.com
+- url: "https://www.primerolabs.com"
+  description: Primero Labs
+- url: "https://www.opendata.blog"
+  description: Open Data Blog
+- url: "https://www.firstbornmedia.com"
+  description: First Born Media

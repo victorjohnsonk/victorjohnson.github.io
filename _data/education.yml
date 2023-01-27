@@ -1,13 +1,16 @@
 # Degree
-- degree: Bachelor of Arts, Human Rights
-  uni: Yale University
-  year: 2004 &mdash; 2008
-  awards:
-    - award: Summa Cumme Laude graduate
-  summary: If you had any meaningful roles at college, feel free to write about them here
-
-- degree: High School Diploma
-  uni: Springfield High School
-  year: 2004
-  award: Most likely to succeed
-  summary: You can choose to have either a single or multiple awards
+- degree: Master of Science, Data Science
+  uni: University of East Anglia
+  year: 2021 &mdash; 2022
+  summary: Graduated with Disticntion as Master of Science in Data Science from University of East Anglia, Norwich, United Kingdom
+  
+- degree: Bachelor of Technology, Computer Science
+  uni: University of Calicut
+  year: 2013 &mdash; 2017
+  summary: Graduated with First class
+  
+- degree: High School
+  uni: Don Bosco School
+  year: 2013
+  summary: Completed secondary education with 92% 
+  

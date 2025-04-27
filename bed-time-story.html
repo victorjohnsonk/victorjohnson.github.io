@@ -144,11 +144,11 @@
                 const inputTensor = tokenize(prompt);
 
                 // Run inference
-                // Replace 'input' with the actual input name expected by your model
-                const feeds = { input: inputTensor };
+                // Fixed: Use 'input_ids' as the input name expected by the model
+                const feeds = { input_ids: inputTensor };
                 const output = await session.run(feeds);
 
-                // Assume the model outputs a tensor named 'output' (replace with actual output name)
+                // TODO: Replace 'output' with the actual output tensor name (check model with Netron)
                 const outputTensor = output.output;
                 const storyText = detokenize(outputTensor);
 

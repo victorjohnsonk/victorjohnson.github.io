@@ -32,7 +32,7 @@
   <script>
     // 3. Load the “with-past” ONNX model
     const sessionPromise = ort.InferenceSession.create(
-      "./models/TinyStories-Instruct-1M.onnx",
+      "./models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx",
       { executionProviders: ["wasm"] }
     );
 

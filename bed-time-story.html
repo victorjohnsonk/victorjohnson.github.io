@@ -36,57 +36,68 @@
     const CACHE_HEAD_SIZE = 4;    // hidden_size/head_count = 64/16 = 4
 
     let session = null;
+
     async function initModel() {
       session = await ort.InferenceSession.create(
         './models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx',
         { executionProviders: ['wasm'] }
       );
-      console.log('Loaded, inputs:', session.inputNames);
+      console.log('Loaded model inputs:', session.inputNames);
+      console.log('Loaded model outputs:', session.outputNames);
     }
 
     function tokenize(p) {
       const ids = p.split(' ').map((_,i)=>i+1);
-      return new ort.Tensor('int64',
+      return new ort.Tensor(
+        'int64',
         BigInt64Array.from(ids.map(BigInt)),
-        [1, ids.length]);
+        [1, ids.length]
+      );
     }
 
-    function detokenize(t) {
-      return 'Once upon a time, ' + Array.from(t.data).join(' ') + '…';
+    function detokenize(tensor) {
+      // tensor.data is a TypedArray of token IDs
+      const ids = Array.from(tensor.data);
+      return 'Once upon a time, ' + ids.join(' ') + '…';
     }
 
     async function generateStory() {
       const p = document.getElementById('prompt').value.trim();
-      if (!p) { alert('Enter a prompt or use Random Story.'); return; }
+      if (!p) {
+        alert('Enter a prompt or click Random Story.');
+        return;
+      }
       await runInference(p);
     }
+
     async function generateRandomStory() {
-      const arr = [
+      const pool = [
         'A curious fox in a glowing forest',
         'A tiny dragon who lost its fire',
         'A bunny exploring a starry meadow',
         'A magical treehouse adventure',
         'A friendly ghost in a cozy village'
       ];
-      const p = arr[Math.floor(Math.random()*arr.length)];
+      const p = pool[Math.floor(Math.random()*pool.length)];
       document.getElementById('prompt').value = p;
       await runInference(p);
     }
 
     async function runInference(prompt) {
-      document.getElementById('story').innerHTML = '';
-      document.getElementById('loading').style.display = 'block';
+      const storyDiv = document.getElementById('story');
+      const loadDiv  = document.getElementById('loading');
+      storyDiv.innerHTML = '';
+      loadDiv.style.display = 'block';
 
       if (!session) {
         await initModel();
-        if (!session) throw new Error('Failed to init model');
+        if (!session) throw new Error('Model failed to load');
       }
 
-      // 1) tokenize + mask + positions
+      // 1) Tokenize + build mask + build positions
       const inputIds = tokenize(prompt);
       const seqLen   = inputIds.dims[1];
 
-      // attention_mask = all 1s
       const maskData = Array(seqLen).fill(1).map(BigInt);
       const attentionMask = new ort.Tensor(
         'int64',
@@ -94,7 +105,6 @@
         [1, seqLen]
       );
 
-      // position_ids = [0,1,2,...,seqLen-1]
       const posData = Array.from({length: seqLen}, (_, i) => BigInt(i));
       const positionIds = new ort.Tensor(
         'int64',
@@ -102,24 +112,28 @@
         [1, seqLen]
       );
 
-      // 2) base feeds
+      // 2) Base feeds
       const feeds = {
         input_ids:      inputIds,
         attention_mask: attentionMask,
         position_ids:   positionIds
       };
 
-      // 3) zero-fill all past_key_values.* slots
+      // 3) Zero-fill all past_key_values.* slots
       const metaArray = Array.isArray(session.inputMetadata)
         ? session.inputMetadata : [];
-      const metaMap = metaArray.reduce((m,v)=>{ m[v.name]=v; return m }, {});
+      const metaMap = metaArray.reduce((m, v) => {
+        m[v.name] = v;
+        return m;
+      }, {});
+
       for (let name of session.inputNames) {
         if (name.startsWith('past_key_values')) {
           const md = metaMap[name];
           const dims = md && Array.isArray(md.shape)
-            ? md.shape.map(d=> typeof d==='number'?d:0 )
+            ? md.shape.map(d => typeof d === 'number' ? d : 0)
             : [1, CACHE_NUM_HEADS, 0, CACHE_HEAD_SIZE];
-          const size = dims.reduce((a,b)=>a*b,1);
+          const size = dims.reduce((a, b) => a * b, 1);
           feeds[name] = new ort.Tensor(
             'float32',
             new Float32Array(size),
@@ -129,20 +143,31 @@
       }
 
       try {
+        // 4) Run
         const outputMap = await session.run(feeds);
-        const out   = outputMap.output;  // adjust key if yours differs
-        const story = detokenize(out);
-        document.getElementById('story').innerHTML = `<p>${story}</p>`;
-      } catch(e) {
+
+        // 5) Grab the first output tensor dynamically:
+        const firstOutName   = session.outputNames[0];
+        const outputTensor   = outputMap[firstOutName];
+        if (!outputTensor || !outputTensor.data) {
+          throw new Error(
+            `Expected tensor at output '${firstOutName}', but got ${outputTensor}`
+          );
+        }
+
+        // 6) Decode & display
+        const storyText = detokenize(outputTensor);
+        storyDiv.innerHTML = `<p>${storyText}</p>`;
+      } catch (e) {
         console.error('Inference error:', e);
-        document.getElementById('story')
-          .innerHTML = '<p>Something went wrong, check console.</p>';
+        storyDiv.innerHTML =
+          '<p>Something went wrong—check console for details.</p>';
       } finally {
-        document.getElementById('loading').style.display = 'none';
+        loadDiv.style.display = 'none';
       }
     }
 
-    // preload
+    // Preload the model on page load
     initModel();
   </script>
 </body>

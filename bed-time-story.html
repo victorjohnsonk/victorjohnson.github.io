@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <title>Bed-Time Story Generator</title>
 
-  <!-- 1. Load ONNX Runtime Web from CDN -->
+  <!-- ONNX Runtime Web from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
   <script>
-    // 2. Point the four WASM backends to the CDN so no local files are needed.
+    // point to the CDN WASM files
     ort.env.wasm.wasmPaths = {
       "ort-wasm.wasm":               "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm.wasm",
       "ort-wasm-simd.wasm":          "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-simd.wasm",
@@ -30,7 +30,7 @@
   <pre id="story"></pre>
 
   <script>
-    // 3. Load your “with-past” ONNX model
+    // load the with-past ONNX model
     const sessionPromise = ort.InferenceSession.create(
       "./models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx",
       { executionProviders: ["wasm"] }
@@ -41,44 +41,40 @@
       const encoder = new TextEncoder();
       const decoder = new TextDecoder();
 
-      // 4. Initial tokens & mask from the prompt
+      // 4. initial prompt → token IDs & mask
       let inputIds = Array.from(encoder.encode(promptText));
       let attentionMask = Array(inputIds.length).fill(1);
 
-      // 5. Discover all the cache input names
-      const cacheInputNames = session.inputNames.filter(name =>
-        name.startsWith("past_key_values.")
+      // 5. find all the cache inputs
+      const cacheInputNames = session.inputNames.filter(n =>
+        n.startsWith("past_key_values.")
       );
 
-      // 6. Build initial zero-length past_key_values tensors
+      // 6. seed each cache input with a [1,16,4,0] float32 tensor
       const pastFeeds = {};
       for (let name of cacheInputNames) {
-        // shape: [1, num_heads, head_dim, 0]
-        // We don't know num_heads/head_dim here, but ONNX Runtime
-        // will accept 0-length last dim for first step.
         pastFeeds[name] = new ort.Tensor(
           "float32",
           new Float32Array(0),
-          // the rank must match the exported graph; typically [1,?, ?, 0]
-          [1, /*num_heads*/, /*head_dim*/, 0]
+          [1, 16, 4, 0]
         );
       }
 
       const generated = [];
 
       for (let step = 0; step < maxNewTokens; step++) {
-        // 7. Prepare feeds: inputs + past cache
+        // 7. build feeds object
         const feeds = {
-          input_ids:      new ort.Tensor("int32", Int32Array.from(inputIds),      [1, inputIds.length]),
-          attention_mask: new ort.Tensor("int32", Int32Array.from(attentionMask), [1, attentionMask.length]),
+          input_ids:      new ort.Tensor("int32", Int32Array.from(inputIds),        [1, inputIds.length]),
+          attention_mask: new ort.Tensor("int32", Int32Array.from(attentionMask),   [1, attentionMask.length]),
           ...pastFeeds
         };
 
-        // 8. Run the model for one step
+        // 8. run one autoregressive step
         const outputs = await session.run(feeds);
 
-        // 9. Greedy decode: pick the highest-logit token
-        const logits = outputs.logits.data;             // shape [1, vocab_size]
+        // 9. greedy pick next token
+        const logits = outputs.logits.data;
         let maxLogit = -Infinity, nextId = 0;
         for (let i = 0; i < logits.length; i++) {
           if (logits[i] > maxLogit) {
@@ -88,22 +84,19 @@
         }
         generated.push(nextId);
 
-        // 10. Prepare for next iteration:
-        //    - Only feed the new token next time
-        //    - Attention mask of [1]
+        // 10. prepare for next iteration
         inputIds = [ nextId ];
         attentionMask = [ 1 ];
 
-        //    - Replace past_key_values.* with present_key_values.*
+        // swap in the new cache
         for (let name in outputs) {
           if (name.startsWith("present_key_values.")) {
-            const pastName = name.replace("present_key_values", "past_key_values");
-            pastFeeds[pastName] = outputs[name];
+            pastFeeds[name.replace("present_key_values", "past_key_values")] = outputs[name];
           }
         }
       }
 
-      // 11. Decode generated IDs to string
+      // decode and return
       return decoder.decode(new Uint8Array(generated));
     }
 

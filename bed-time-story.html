@@ -29,9 +29,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
   <script>
-    // TUNE THESE if needed
-    const CACHE_NUM_HEADS = 12;
-    const CACHE_HEAD_SIZE = 64;
+    // ————————————————————————
+    // TUNE THESE TO YOUR ONNX MODEL
+    // ————————————————————————
+    const CACHE_NUM_HEADS = 16;   // model exported with 16 heads
+    const CACHE_HEAD_SIZE = 4;    // hidden_size/head_count = 64/16 = 4
 
     let session = null;
     async function initModel() {
@@ -85,18 +87,18 @@
       const seqLen   = inputIds.dims[1];
 
       // attention_mask = all 1s
-      const maskArr = Array(seqLen).fill(1).map(BigInt);
+      const maskData = Array(seqLen).fill(1).map(BigInt);
       const attentionMask = new ort.Tensor(
         'int64',
-        BigInt64Array.from(maskArr),
+        BigInt64Array.from(maskData),
         [1, seqLen]
       );
 
       // position_ids = [0,1,2,...,seqLen-1]
-      const posArr = Array.from({length: seqLen}, (_, i) => BigInt(i));
+      const posData = Array.from({length: seqLen}, (_, i) => BigInt(i));
       const positionIds = new ort.Tensor(
         'int64',
-        BigInt64Array.from(posArr),
+        BigInt64Array.from(posData),
         [1, seqLen]
       );
 
@@ -128,7 +130,7 @@
 
       try {
         const outputMap = await session.run(feeds);
-        const out   = outputMap.output; // adjust key if yours differs
+        const out   = outputMap.output;  // adjust key if yours differs
         const story = detokenize(out);
         document.getElementById('story').innerHTML = `<p>${story}</p>`;
       } catch(e) {

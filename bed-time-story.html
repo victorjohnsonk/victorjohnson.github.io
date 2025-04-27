@@ -19,7 +19,7 @@
     #random-btn { background:#008CBA; }
     button:not(#random-btn) { background:#4CAF50; }
     button:hover { opacity:0.9; }
-    #loading { display:none; text-align:center; color:#666; }
+    #loading { display:none; text-align:center; color:#666; margin-bottom:10px; }
     #story {
       background:white; padding:20px; border:1px solid #ddd;
       border-radius:5px; min-height:150px;
@@ -41,11 +41,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
   <script>
-    // ———————————————————————————
+    // —————————————————————————————
     // Adjust these to match your ONNX export
-    // ———————————————————————————
-    const CACHE_NUM_HEADS = 16;  // your model’s # of attention heads
-    const CACHE_HEAD_SIZE = 4;   // hidden_size / heads = e.g. 64/16
+    // —————————————————————————————
+    const CACHE_NUM_HEADS = 16;  // number of attention heads in your model
+    const CACHE_HEAD_SIZE = 4;   // head_dim = hidden_size / heads (e.g. 64/16)
 
     let session = null;
 
@@ -59,7 +59,7 @@
       console.log('Model outputs:', session.outputNames);
     }
 
-    // Dummy whitespace tokenizer — replace with your real one!
+    // Dummy whitespace tokenizer — replace with your real one
     function tokenize(text) {
       const ids = text.split(' ').map((_, i) => i + 1);
       return new ort.Tensor(
@@ -69,7 +69,7 @@
       );
     }
 
-    // Dummy detokenizer — replace with your real vocab lookup!
+    // Dummy detokenizer — replace with real vocab lookup
     function detokenize(tensor) {
       const arr = Array.from(tensor.data);
       return 'Once upon a time, ' + arr.join(' ') + '…';
@@ -100,31 +100,32 @@
 
       if (!session) await initModel();
 
-      // 1) tokenize + build masks + positions
+      // 1) Tokenize + build attention_mask + position_ids
       const inputIds = tokenize(prompt);
       const seqLen   = inputIds.dims[1];
 
+      const maskArr = Array.from({ length: seqLen }, () => BigInt(1));
       const attentionMask = new ort.Tensor(
         'int64',
-        BigInt64Array.from(Array(seqLen).fill(1).map(BigInt)),
+        BigInt64Array.from(maskArr),
         [1, seqLen]
       );
 
+      const posArr = Array.from({ length: seqLen }, (_, i) => BigInt(i));
       const positionIds = new ort.Tensor(
         'int64',
-        BigInt64Array.from(Array(seqLen).map((_, i) => BigInt(i))),
+        BigInt64Array.from(posArr),
         [1, seqLen]
       );
 
-      // 2) base feeds
+      // 2) Base feeds
       const feeds = {
         input_ids:      inputIds,
         attention_mask: attentionMask,
         position_ids:   positionIds
       };
 
-      // 3) ZERO-FILL every past_key_values.* input
-      //    so ONNX Runtime never complains about a missing slot
+      // 3) Zero-fill every past_key_values.* input
       for (const name of session.inputNames) {
         if (name.startsWith('past_key_values.')) {
           const dims = [1, CACHE_NUM_HEADS, 0, CACHE_HEAD_SIZE];
@@ -138,10 +139,10 @@
       }
 
       try {
-        // 4) run the model
+        // 4) Run the model
         const outputMap = await session.run(feeds);
 
-        // 5) grab the first (main) output tensor
+        // 5) Grab the main output tensor dynamically
         const mainOutName = session.outputNames[0];
         const outTensor   = outputMap[mainOutName];
         const storyText   = detokenize(outTensor);
@@ -156,7 +157,7 @@
       }
     }
 
-    // Preload model
+    // Preload the model on page load
     initModel();
   </script>
 </body>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Bed-Time Story Generator</title>
+
+    <!-- 1. Load the ONNX Runtime Web bundle -->
+    <script src="./lib/ort.min.js"></script>
+    <script>
+        // 2. Tell ORT where to find its .wasm runner
+        ort.env.wasm.wasmPaths = {
+            // key must match the filename inside the package
+            "ort-wasm.wasm": "./lib/ort-wasm.wasm"
+        };
+    </script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2em;
+        }
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 0.5em;
+            padding: 0.5em 1em;
+        }
+
+        pre {
+            background: #f4f4f4;
+            padding: 1em;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Bed-Time Story Generator</h1>
+
+    <textarea id="prompt" rows="4" placeholder="Once upon a time…"></textarea><br>
+    <button id="generate">Tell me a story!</button>
+
+    <pre id="story"></pre>
+
+    <script>
+        // 3. Load the TinyStories model once on page load
+        const sessionPromise = ort.InferenceSession.create(
+            "./models/TinyStories-Instruct-1M.onnx",
+            { executionProviders: ["wasm"] }
+        );
+
+        async function generateStory() {
+            const promptText = document.getElementById("prompt").value.trim() || "Once upon a time";
+
+            // Simple UTF-8 → int32 tokenization
+            const encoder = new TextEncoder();
+            const inputIdsArray = Array.from(encoder.encode(promptText));
+            const length = inputIdsArray.length;
+
+            // Build input tensors
+            const inputIdsTensor = new ort.Tensor("int32", Int32Array.from(inputIdsArray), [1, length]);
+            const attentionMaskTensor = new ort.Tensor("int32", Int32Array.from(new Array(length).fill(1)), [1, length]);
+
+            // Run the model
+            const session = await sessionPromise;
+            const outputs = await session.run({
+                input_ids: inputIdsTensor,
+                attention_mask: attentionMaskTensor
+            });
+
+            // Assume the model returns raw UTF-8 byte IDs in `output_ids`
+            const outputIds = outputs.output_ids.data;
+            const storyText = new TextDecoder().decode(new Uint8Array(outputIds));
+
+            document.getElementById("story").textContent = storyText;
+        }
+
+        document.getElementById("generate").addEventListener("click", generateStory);
+    </script>
+</body>
+
+</html>

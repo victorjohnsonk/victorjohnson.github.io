@@ -7,19 +7,30 @@
   <style>
     body { font-family: Arial; max-width:800px; margin:20px auto; background:#f0f4f8; }
     h1 { text-align:center; color:#333; }
-    #prompt { width:100%; padding:10px; font-size:16px; border:1px solid #ccc; border-radius:5px; }
-    .button-container { display:flex; gap:10px; margin:20px 0; }
-    button { flex:1; padding:10px; border:none; border-radius:5px; color:white; cursor:pointer; }
-    button:hover { opacity:0.9; }
+    #prompt {
+      width:100%; padding:10px; font-size:16px;
+      border:1px solid #ccc; border-radius:5px;
+    }
+    .button-container {
+      display:flex; gap:10px; margin:20px 0;
+    }
+    button {
+      flex:1; padding:10px; border:none;
+      border-radius:5px; color:white; cursor:pointer;
+    }
     #random-btn { background:#008CBA; }
     button:not(#random-btn) { background:#4CAF50; }
-    #story { background:white; padding:20px; border:1px solid #ddd; border-radius:5px; min-height:100px; }
+    button:hover { opacity:0.9; }
+    #story {
+      background:white; padding:20px; border:1px solid #ddd;
+      border-radius:5px; min-height:100px;
+    }
     #loading { display:none; text-align:center; color:#666; }
   </style>
 </head>
 <body>
   <h1>Bedtime Story Generator</h1>
-  <input id="prompt" placeholder="Enter a story prompt…">
+  <input id="prompt" placeholder="Enter a story prompt…" />
   <div class="button-container">
     <button onclick="generateStory()">Generate Story</button>
     <button id="random-btn" onclick="generateRandomStory()">Random Story</button>
@@ -29,25 +40,37 @@
 
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
   <script>
-    // ————————————————————————
-    // TUNE THESE TO YOUR ONNX MODEL
-    // ————————————————————————
-    const CACHE_NUM_HEADS = 16;   // model exported with 16 heads
-    const CACHE_HEAD_SIZE = 4;    // hidden_size/head_count = 64/16 = 4
+    // ──────────────── CONFIG ────────────────
+    const CACHE_NUM_HEADS = 16;   // your model’s # attention heads
+    const CACHE_HEAD_SIZE = 4;    // head_dim = hidden_size/heads = 64/16
+    const MAX_NEW_TOKENS  = 50;   // how many tokens to generate
+    const EOS_TOKEN_ID    = 2;    // adjust to your model’s EOS
 
-    let session = null;
+    let session = null;           // ONNX Session
+    let vocab   = null;           // id→token map
 
+    // ───────── LOAD VOCAB JSON ─────────
+    async function loadVocab() {
+      const r = await fetch('./models/TinyStories-Instruct-1M/vocab.json');
+      vocab = await r.json();
+      console.log('Loaded vocab, size=', Object.keys(vocab).length);
+    }
+
+    // ───────── INIT ONNX MODEL ──────────
     async function initModel() {
       session = await ort.InferenceSession.create(
         './models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx',
         { executionProviders: ['wasm'] }
       );
-      console.log('Loaded model inputs:', session.inputNames);
-      console.log('Loaded model outputs:', session.outputNames);
+      console.log('Model inputs:', session.inputNames);
+      console.log('Model outputs:', session.outputNames);
     }
 
-    function tokenize(p) {
-      const ids = p.split(' ').map((_,i)=>i+1);
+    // ───────── TOKENIZER PLACEHOLDER ────
+    // You should replace this with a real tokenizer that matches your ONNX export!
+    function tokenize(prompt) {
+      const words = prompt.split(' ');
+      const ids = words.map((_,i)=>i+1);
       return new ort.Tensor(
         'int64',
         BigInt64Array.from(ids.map(BigInt)),
@@ -55,21 +78,12 @@
       );
     }
 
-    function detokenize(tensor) {
-      // tensor.data is a TypedArray of token IDs
-      const ids = Array.from(tensor.data);
-      return 'Once upon a time, ' + ids.join(' ') + '…';
-    }
-
+    // ───────── BUTTON HOOKS ─────────────
     async function generateStory() {
       const p = document.getElementById('prompt').value.trim();
-      if (!p) {
-        alert('Enter a prompt or click Random Story.');
-        return;
-      }
+      if (!p) { alert('Enter a prompt or click Random Story.'); return; }
       await runInference(p);
     }
-
     async function generateRandomStory() {
       const pool = [
         'A curious fox in a glowing forest',
@@ -83,58 +97,33 @@
       await runInference(p);
     }
 
+    // ────────── RUN + DECODE LOOP ─────────
     async function runInference(prompt) {
-      const storyDiv = document.getElementById('story');
-      const loadDiv  = document.getElementById('loading');
-      storyDiv.innerHTML = '';
-      loadDiv.style.display = 'block';
+      // UI prep
+      document.getElementById('story').innerHTML = '';
+      document.getElementById('loading').style.display = 'block';
 
-      if (!session) {
-        await initModel();
-        if (!session) throw new Error('Model failed to load');
-      }
+      // lazy‐load model + vocab
+      if (!session) await initModel();
+      if (!vocab)   await loadVocab();
 
-      // 1) Tokenize + build mask + build positions
-      const inputIds = tokenize(prompt);
-      const seqLen   = inputIds.dims[1];
-
-      const maskData = Array(seqLen).fill(1).map(BigInt);
-      const attentionMask = new ort.Tensor(
-        'int64',
-        BigInt64Array.from(maskData),
-        [1, seqLen]
-      );
-
-      const posData = Array.from({length: seqLen}, (_, i) => BigInt(i));
-      const positionIds = new ort.Tensor(
-        'int64',
-        BigInt64Array.from(posData),
-        [1, seqLen]
-      );
-
-      // 2) Base feeds
-      const feeds = {
-        input_ids:      inputIds,
-        attention_mask: attentionMask,
-        position_ids:   positionIds
-      };
-
-      // 3) Zero-fill all past_key_values.* slots
+      // 1) initial tokens from prompt
+      const inputTensor = tokenize(prompt);
+      let tokenIds = Array.from(inputTensor.data).map(x => Number(x));
+      
+      // 2) build zero‐cache for all past_key_values.*
       const metaArray = Array.isArray(session.inputMetadata)
         ? session.inputMetadata : [];
-      const metaMap = metaArray.reduce((m, v) => {
-        m[v.name] = v;
-        return m;
-      }, {});
-
+      const metaMap = metaArray.reduce((m,v)=>{ m[v.name]=v; return m; }, {});
+      let past = {};
       for (let name of session.inputNames) {
         if (name.startsWith('past_key_values')) {
           const md = metaMap[name];
           const dims = md && Array.isArray(md.shape)
-            ? md.shape.map(d => typeof d === 'number' ? d : 0)
+            ? md.shape.map(d=>typeof d==='number'?d:0)
             : [1, CACHE_NUM_HEADS, 0, CACHE_HEAD_SIZE];
-          const size = dims.reduce((a, b) => a * b, 1);
-          feeds[name] = new ort.Tensor(
+          const size = dims.reduce((a,b)=>a*b,1);
+          past[name] = new ort.Tensor(
             'float32',
             new Float32Array(size),
             dims
@@ -142,33 +131,78 @@
         }
       }
 
-      try {
-        // 4) Run
+      // 3) generation loop
+      for (let step = 0; step < MAX_NEW_TOKENS; step++) {
+        const lastId = tokenIds[tokenIds.length - 1];
+
+        // build per‐step inputs
+        const inputIds = new ort.Tensor(
+          'int64',
+          BigInt64Array.from([BigInt(lastId)]),
+          [1,1]
+        );
+        // attention over entire sequence
+        const attnMask = new ort.Tensor(
+          'int64',
+          BigInt64Array.from(tokenIds.map(BigInt)),
+          [1, tokenIds.length]
+        );
+        // positions = 0..seqLen-1
+        const posIds = new ort.Tensor(
+          'int64',
+          BigInt64Array.from(tokenIds.map((_,i)=>BigInt(i))),
+          [1, tokenIds.length]
+        );
+
+        const feeds = {
+          input_ids:      inputIds,
+          attention_mask: attnMask,
+          position_ids:   posIds,
+          ...past
+        };
+
+        // run the model forward
         const outputMap = await session.run(feeds);
 
-        // 5) Grab the first output tensor dynamically:
-        const firstOutName   = session.outputNames[0];
-        const outputTensor   = outputMap[firstOutName];
-        if (!outputTensor || !outputTensor.data) {
-          throw new Error(
-            `Expected tensor at output '${firstOutName}', but got ${outputTensor}`
-          );
+        // extract logits (replace 'logits' if yours differs)
+        const logits = outputMap.logits ?? outputMap[session.outputNames[0]];
+        // shape [1,1,vocabSize]
+        const arr = logits.data;
+        // greedy argmax
+        let nextId = 0, best = -Infinity;
+        for (let i = 0; i < arr.length; i++) {
+          if (arr[i] > best) { best = arr[i]; nextId = i; }
+        }
+        tokenIds.push(nextId);
+
+        // collect new past_key_values for next step
+        past = {};
+        for (let name of session.outputNames) {
+          if (name.startsWith('past_key_values')) {
+            past[name] = outputMap[name];
+          }
         }
 
-        // 6) Decode & display
-        const storyText = detokenize(outputTensor);
-        storyDiv.innerHTML = `<p>${storyText}</p>`;
-      } catch (e) {
-        console.error('Inference error:', e);
-        storyDiv.innerHTML =
-          '<p>Something went wrong—check console for details.</p>';
-      } finally {
-        loadDiv.style.display = 'none';
+        // stop if we hit EOS
+        if (nextId === EOS_TOKEN_ID) break;
       }
+
+      // 4) detokenize via vocab.json
+      let text = '';
+      for (let id of tokenIds) {
+        const tok = vocab[id] || '<unk>';
+        // many HF tokenizers use 'Ġ' as a “space” marker:
+        text += tok.startsWith('Ġ') ? ' ' + tok.slice(1) : tok;
+      }
+
+      // display
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('story').innerHTML = `<p>${text.trim()}</p>`;
     }
 
-    // Preload the model on page load
+    // kick things off
     initModel();
+    loadVocab();
   </script>
 </body>
 </html>

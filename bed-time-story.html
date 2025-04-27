@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Bedtime Story Generator</title>
   <style>
     body { font-family: Arial; max-width:800px; margin:20px auto; background:#f0f4f8; }
@@ -13,13 +13,13 @@
     #random-btn { background:#008CBA; }
     button:not(#random-btn) { background:#4CAF50; }
     button:hover { opacity:0.9; }
-    #story { background:white; padding:20px; border:1px solid #ddd; border-radius:5px; min-height:100px; }
     #loading { display:none; text-align:center; color:#666; }
+    #story { background:white; padding:20px; border:1px solid #ddd; border-radius:5px; min-height:150px; }
   </style>
 </head>
 <body>
   <h1>Bedtime Story Generator</h1>
-  <input id="prompt" placeholder="Enter a story prompt…">
+  <input id="prompt" placeholder="Enter a story prompt…" />
   <div class="button-container">
     <button onclick="generateStory()">Generate Story</button>
     <button id="random-btn" onclick="generateRandomStory()">Random Story</button>
@@ -29,41 +29,51 @@
 
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
   <script>
-    // your model cache dims (16 heads × 4 head-size)
-    const CACHE_NUM_HEADS = 16;
-    const CACHE_HEAD_SIZE = 4;
+    // ─────────────── CONFIG ───────────────
+    const CACHE_NUM_HEADS = 16;   // your model’s # heads
+    const CACHE_HEAD_SIZE = 4;    // head_dim = hidden_size / heads = 64/16
+    const MAX_NEW_TOKENS  = 50;   // cap generation length
+    const EOS_TOKEN_ID    = 2;    // adjust to your model’s special EOS id
 
-    let session = null;
+    let session = null;  // ONNX session
+    let vocab   = null;  // id → token map
 
+    // ──────── LOAD VOCAB.JSON ─────────
+    async function loadVocab() {
+      const resp = await fetch('./models/TinyStories-Instruct-1M/vocab.json');
+      vocab = await resp.json();
+      console.log('Vocab loaded, size=', Object.keys(vocab).length);
+    }
+
+    // ──────── INIT MODEL ───────────────
     async function initModel() {
       session = await ort.InferenceSession.create(
         './models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx',
         { executionProviders: ['wasm'] }
       );
-      console.log('Model inputs:', session.inputNames);
+      console.log('Model ready. inputs=', session.inputNames);
+      console.log('Model ready. outputs=', session.outputNames);
     }
 
-    function tokenize(text) {
-      // DUMMY: replace with your real tokenizer!
-      const ids = text.split(' ').map((_,i)=>i+1);
-      return new ort.Tensor('int64',
+    // ─────── DUMMY TOKENIZER ───────────
+    // Swap in your real tokenizer here (e.g. HuggingFace tokenizers.js).
+    function tokenize(prompt) {
+      const words = prompt.split(' ');
+      // map each word → a fake id (1,2,3…)
+      const ids = words.map((_,i)=>i+1);
+      return new ort.Tensor(
+        'int64',
         BigInt64Array.from(ids.map(BigInt)),
-        [1, ids.length]);
+        [1, ids.length]
+      );
     }
 
-    function detokenize(tensor) {
-      // DUMMY: replace with your real decoder!
-      return 'Once upon a time, ' +
-             Array.from(tensor.data).join(' ') +
-             '…';
-    }
-
+    // ─────── BUTTON HANDLERS ──────────
     async function generateStory() {
       const p = document.getElementById('prompt').value.trim();
       if (!p) { alert('Please enter a prompt.'); return; }
       await runInference(p);
     }
-
     async function generateRandomStory() {
       const pool = [
         'A curious fox in a glowing forest',
@@ -77,71 +87,103 @@
       await runInference(p);
     }
 
+    // ─────── GENERATION LOOP ──────────
     async function runInference(prompt) {
-      // UI
       document.getElementById('story').innerHTML = '';
       document.getElementById('loading').style.display = 'block';
 
+      // lazy‐load
       if (!session) await initModel();
+      if (!vocab)   await loadVocab();
 
-      // 1) tokenize + masks + positions
-      const inputTensor = tokenize(prompt);
-      const seqLen = inputTensor.dims[1];
+      // 1) prompt → token IDs
+      const inTensor = tokenize(prompt);
+      let tokenIds = Array.from(inTensor.data, x => Number(x));
 
-      const maskData = Array(seqLen).fill(1).map(BigInt);
-      const attentionMask = new ort.Tensor(
-        'int64',
-        BigInt64Array.from(maskData),
-        [1, seqLen]
-      );
-
-      const posData = Array.from({length: seqLen}, (_, i)=>BigInt(i));
-      const positionIds = new ort.Tensor(
-        'int64',
-        BigInt64Array.from(posData),
-        [1, seqLen]
-      );
-
-      // 2) build your feeds with the core inputs
-      const feeds = {
-        input_ids:      inputTensor,
-        attention_mask: attentionMask,
-        position_ids:   positionIds
-      };
-
-      // 3) ZERO-FILL every past_key_values.* slot BEFORE you run
-      //    This guarantees you never miss one:
-      for (const name of session.inputNames) {
-        if (name.startsWith('past_key_values.')) {
-          // shape = [1, heads, 0, head_size]
+      // 2) build zero‐cache for all past_key_values.*
+      const metaArr = Array.isArray(session.inputMetadata)
+        ? session.inputMetadata : [];
+      const metaMap = metaArr.reduce((m,v)=>{ m[v.name]=v; return m; }, {});
+      let past = {};
+      for (let name of session.inputNames) {
+        if (name.startsWith('past_key_values')) {
+          // shape [1, heads, 0, head_size]
           const dims = [1, CACHE_NUM_HEADS, 0, CACHE_HEAD_SIZE];
-          const size = dims.reduce((a,b)=>a*b, 1); // =0
-          feeds[name] = new ort.Tensor(
-            'float32',
-            new Float32Array(size),
-            dims
-          );
+          const size = dims.reduce((a,b)=>a*b,1);
+          past[name] = new ort.Tensor('float32', new Float32Array(size), dims);
         }
       }
 
-      try {
-        // 4) run — now all required inputs are in feeds
+      // 3) autoregressive generation
+      for (let i = 0; i < MAX_NEW_TOKENS; i++) {
+        const lastId = tokenIds[tokenIds.length-1];
+
+        // single‐step input
+        const inputIds = new ort.Tensor(
+          'int64',
+          BigInt64Array.from([BigInt(lastId)]),
+          [1,1]
+        );
+        // attention over full history
+        const attn = new ort.Tensor(
+          'int64',
+          BigInt64Array.from(tokenIds.map(BigInt)),
+          [1, tokenIds.length]
+        );
+        // position ids 0…seqLen-1
+        const pos = new ort.Tensor(
+          'int64',
+          BigInt64Array.from(tokenIds.map((_,j)=>BigInt(j))),
+          [1, tokenIds.length]
+        );
+
+        const feeds = {
+          input_ids:      inputIds,
+          attention_mask: attn,
+          position_ids:   pos,
+          ...past
+        };
+
         const outputMap = await session.run(feeds);
 
-        // 5) grab whatever your model named its main output:
-        const mainOutName = session.outputNames[0];
-        const outTensor   = outputMap[mainOutName];
-        const storyText   = detokenize(outTensor);
+        // grab logits (may be named “logits” or the first output)
+        const logits = outputMap.logits ?? outputMap[session.outputNames[0]];
+        // logits.data is a Float32Array of size [1,1,vocabSize]
+        const arr = logits.data;
+        // greedy argmax
+        let best = -Infinity, nextId = 0;
+        for (let j = 0; j < arr.length; j++) {
+          if (arr[j] > best) { best = arr[j]; nextId = j; }
+        }
+        tokenIds.push(nextId);
 
-        document.getElementById('story').innerHTML = `<p>${storyText}</p>`;
-      } catch (e) {
-        console.error('Inference error:', e);
-        document.getElementById('story')
-          .innerHTML = '<p>Oops, something went wrong. Check console.</p>';
-      } finally {
-        document.getElementById('loading').style.display = 'none';
+        // update past_key_values for next step
+        past = {};
+        for (let k of session.outputNames) {
+          if (k.startsWith('past_key_values')) {
+            past[k] = outputMap[k];
+          }
+        }
+
+        if (nextId === EOS_TOKEN_ID) break;
       }
+
+      // 4) decode IDs → tokens → string
+      let text = '';
+      for (let id of tokenIds) {
+        const tok = vocab[id] || '<unk>';
+        // handle HF “Ġ” prefix for spaces if present
+        text += tok.startsWith('Ġ') ? ' ' + tok.slice(1) : tok;
+      }
+
+      // display
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('story').innerHTML = `<p>${text.trim()}</p>`;
     }
+
+    // kick things off
+    initModel();
+    loadVocab();
   </script>
 </body>
 </html>

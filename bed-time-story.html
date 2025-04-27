@@ -5,26 +5,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Bedtime Story Generator</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width:800px; margin:20px auto; background:#f0f4f8; }
+    body { font-family: Arial; max-width:800px; margin:20px auto; background:#f0f4f8; }
     h1 { text-align:center; color:#333; }
-    .input-container { margin-bottom:20px; }
     #prompt { width:100%; padding:10px; font-size:16px; border:1px solid #ccc; border-radius:5px; }
-    .button-container { display:flex; gap:10px; margin-bottom:20px; }
-    button { padding:10px 20px; font-size:16px; border:none; border-radius:5px; cursor:pointer; color:white; }
+    .button-container { display:flex; gap:10px; margin:20px 0; }
+    button { flex:1; padding:10px; border:none; border-radius:5px; color:white; cursor:pointer; }
     button:hover { opacity:0.9; }
     #random-btn { background:#008CBA; }
-    #random-btn:hover { background:#007399; }
     button:not(#random-btn) { background:#4CAF50; }
-    button:not(#random-btn):hover { background:#45a049; }
     #story { background:white; padding:20px; border:1px solid #ddd; border-radius:5px; min-height:100px; }
     #loading { display:none; text-align:center; color:#666; }
   </style>
 </head>
 <body>
   <h1>Bedtime Story Generator</h1>
-  <div class="input-container">
-    <input id="prompt" placeholder="Enter a story prompt…">
-  </div>
+  <input id="prompt" placeholder="Enter a story prompt…">
   <div class="button-container">
     <button onclick="generateStory()">Generate Story</button>
     <button id="random-btn" onclick="generateRandomStory()">Random Story</button>
@@ -34,132 +29,118 @@
 
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
   <script>
-    // ======== TUNE THESE TO YOUR MODEL ========
-    const CACHE_NUM_HEADS = 12;     // e.g. 12 attention heads
-    const CACHE_HEAD_SIZE = 64;     // e.g. 64 dimensions per head
+    // TUNE THESE if needed
+    const CACHE_NUM_HEADS = 12;
+    const CACHE_HEAD_SIZE = 64;
 
     let session = null;
-
     async function initModel() {
-      try {
-        session = await ort.InferenceSession.create(
-          './models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx',
-          { executionProviders: ['wasm'] }
-        );
-        console.log('Model inputs:', session.inputNames);
-      } catch (e) {
-        console.error('Model load error:', e);
-        document.getElementById('story').innerHTML =
-          '<p>Error loading model; see console.</p>';
-      }
+      session = await ort.InferenceSession.create(
+        './models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx',
+        { executionProviders: ['wasm'] }
+      );
+      console.log('Loaded, inputs:', session.inputNames);
     }
 
-    function tokenize(prompt) {
-      const words = prompt.split(' ');
-      const ids = words.map((_, i) => i + 1);
+    function tokenize(p) {
+      const ids = p.split(' ').map((_,i)=>i+1);
       return new ort.Tensor('int64',
         BigInt64Array.from(ids.map(BigInt)),
         [1, ids.length]);
     }
 
-    function detokenize(tensor) {
-      return 'Once upon a time, ' +
-             Array.from(tensor.data).join(' ') +
-             '… (placeholder)';
+    function detokenize(t) {
+      return 'Once upon a time, ' + Array.from(t.data).join(' ') + '…';
     }
 
     async function generateStory() {
       const p = document.getElementById('prompt').value.trim();
-      if (!p) {
-        alert('Enter a prompt or click Random Story.');
-        return;
-      }
+      if (!p) { alert('Enter a prompt or use Random Story.'); return; }
       await runInference(p);
     }
-
     async function generateRandomStory() {
-      const pool = [
+      const arr = [
         'A curious fox in a glowing forest',
         'A tiny dragon who lost its fire',
         'A bunny exploring a starry meadow',
         'A magical treehouse adventure',
         'A friendly ghost in a cozy village'
       ];
-      const p = pool[Math.floor(Math.random()*pool.length)];
+      const p = arr[Math.floor(Math.random()*arr.length)];
       document.getElementById('prompt').value = p;
       await runInference(p);
     }
 
     async function runInference(prompt) {
-      const storyDiv = document.getElementById('story');
-      const loadDiv  = document.getElementById('loading');
-      storyDiv.innerHTML = '';
-      loadDiv.style.display = 'block';
+      document.getElementById('story').innerHTML = '';
+      document.getElementById('loading').style.display = 'block';
+
+      if (!session) {
+        await initModel();
+        if (!session) throw new Error('Failed to init model');
+      }
+
+      // 1) tokenize + mask + positions
+      const inputIds = tokenize(prompt);
+      const seqLen   = inputIds.dims[1];
+
+      // attention_mask = all 1s
+      const maskArr = Array(seqLen).fill(1).map(BigInt);
+      const attentionMask = new ort.Tensor(
+        'int64',
+        BigInt64Array.from(maskArr),
+        [1, seqLen]
+      );
+
+      // position_ids = [0,1,2,...,seqLen-1]
+      const posArr = Array.from({length: seqLen}, (_, i) => BigInt(i));
+      const positionIds = new ort.Tensor(
+        'int64',
+        BigInt64Array.from(posArr),
+        [1, seqLen]
+      );
+
+      // 2) base feeds
+      const feeds = {
+        input_ids:      inputIds,
+        attention_mask: attentionMask,
+        position_ids:   positionIds
+      };
+
+      // 3) zero-fill all past_key_values.* slots
+      const metaArray = Array.isArray(session.inputMetadata)
+        ? session.inputMetadata : [];
+      const metaMap = metaArray.reduce((m,v)=>{ m[v.name]=v; return m }, {});
+      for (let name of session.inputNames) {
+        if (name.startsWith('past_key_values')) {
+          const md = metaMap[name];
+          const dims = md && Array.isArray(md.shape)
+            ? md.shape.map(d=> typeof d==='number'?d:0 )
+            : [1, CACHE_NUM_HEADS, 0, CACHE_HEAD_SIZE];
+          const size = dims.reduce((a,b)=>a*b,1);
+          feeds[name] = new ort.Tensor(
+            'float32',
+            new Float32Array(size),
+            dims
+          );
+        }
+      }
 
       try {
-        if (!session) {
-          await initModel();
-          if (!session) throw new Error('Model init failed');
-        }
-
-        // --- tokenize + mask ---
-        const inputTensor = tokenize(prompt);
-        const seqLen = inputTensor.dims[1];
-        const maskData = Array(seqLen).fill(1).map(BigInt);
-        const attentionMask = new ort.Tensor(
-          'int64',
-          BigInt64Array.from(maskData),
-          [1, seqLen]
-        );
-
-        // --- our feeds object must include all declared inputs ---
-        const feeds = {
-          input_ids:      inputTensor,
-          attention_mask: attentionMask
-        };
-
-        // ======= SAFE metadata map (might be undefined in some builds) =======
-        const metaArray = Array.isArray(session.inputMetadata)
-          ? session.inputMetadata
-          : [];
-        const metaMap = metaArray.reduce((m, v) => {
-          m[v.name] = v; return m;
-        }, {});
-
-        // ======= zero-fill every past_key_values.* slot =======
-        for (let name of session.inputNames) {
-          if (name.startsWith('past_key_values')) {
-            // If metadata is present, use its .shape; else fall back
-            const md = metaMap[name];
-            const dims = md && Array.isArray(md.shape)
-              ? md.shape.map(d => typeof d === 'number' ? d : 0)
-              : [1, CACHE_NUM_HEADS, 0, CACHE_HEAD_SIZE];
-            const size = dims.reduce((a, b) => a * b, 1);
-            feeds[name] = new ort.Tensor(
-              'float32',
-              new Float32Array(size),
-              dims
-            );
-          }
-        }
-
-        // --- run and decode ---
         const outputMap = await session.run(feeds);
-        // adjust this key if your model names it differently
-        const outTensor = outputMap.output;  
-        const text = detokenize(outTensor);
-
-        loadDiv.style.display = 'none';
-        storyDiv.innerHTML = `<p>${text}</p>`;
-      } catch (err) {
-        loadDiv.style.display = 'none';
-        console.error('Inference error:', err);
-        storyDiv.innerHTML =
-          '<p>Something went wrong. Check console for details.</p>';
+        const out   = outputMap.output; // adjust key if yours differs
+        const story = detokenize(out);
+        document.getElementById('story').innerHTML = `<p>${story}</p>`;
+      } catch(e) {
+        console.error('Inference error:', e);
+        document.getElementById('story')
+          .innerHTML = '<p>Something went wrong, check console.</p>';
+      } finally {
+        document.getElementById('loading').style.display = 'none';
       }
     }
 
-    // pre-load model
+    // preload
     initModel();
   </script>
 </body>

@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <title>TinyStories Bedtime Generator</title>
 
-  <!-- ONNX Runtime Web from CDN -->
+  <!-- ONNX Runtime Web -->
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
   <script>
-    // Point ORT to its WASM runners on the CDN
+    // point to the CDN WASM runners
     ort.env.wasm.wasmPaths = {
       "ort-wasm.wasm":               "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm.wasm",
       "ort-wasm-simd.wasm":          "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-simd.wasm",
@@ -17,9 +17,9 @@
   </script>
 
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 2em auto; line-height: 1.5; }
+    body { font-family: sans-serif; max-width: 600px; margin: 2em auto; }
     textarea { width: 100%; box-sizing: border-box; font-size: 1em; }
-    button { margin-top: .5em; margin-right: .5em; padding: .5em 1em; font-size: 1em; }
+    button { margin: .5em .5em 0 0; padding: .5em 1em; }
     pre { background: #f4f4f4; padding: 1em; white-space: pre-wrap; }
   </style>
 </head>
@@ -34,13 +34,13 @@
   <pre id="story"></pre>
 
   <script>
-  // 1) Load your ONNX model (with past_key_values)
+  // 1) Load the ONNX model (with cache / past_key_values)
   const sessionPromise = ort.InferenceSession.create(
     "./models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx",
     { executionProviders: ["wasm"] }
   );
 
-  // 2) Some default prompts for Random Story
+  // 2) Default prompts
   const DEFAULT_PROMPTS = [
     "A brave little snail goes on an adventure",
     "A friendly dragon who loves cookies",
@@ -54,55 +54,62 @@
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
 
-    // Tokenize prompt
+    // tokenize prompt → bytes
     let inputIds      = Array.from(encoder.encode(promptText));
     let attentionMask = Array(inputIds.length).fill(1);
 
-    // Build position_ids = [0,1,...,L-1]
-    let positionIds     = inputIds.map((_, i) => i);
+    // build position_ids [0,1,…,L-1]
+    let positionIds     = inputIds.map((_,i) => i);
     let currentPosition = positionIds.length;
 
-    // Prepare empty cache feeds for past_key_values:
-    // model config: hidden_size=64, num_heads=16 → head_dim=4
+    // prepare empty cache feeds ([1,16,4,0] float32 for this model)
     const cacheNames = session.inputNames.filter(n => n.startsWith("past_key_values."));
     const pastFeeds  = {};
     for (let name of cacheNames) {
-      pastFeeds[name] = new ort.Tensor(
-        "float32",
-        new Float32Array(0),
-        [1, 16, 4, 0]
-      );
+      pastFeeds[name] = new ort.Tensor("float32", new Float32Array(0), [1,16,4,0]);
     }
 
     const generatedIds = [];
 
     for (let step = 0; step < maxNewTokens; step++) {
-      // assemble feeds
+      // **IMPORTANT**: use int64 for all ID inputs
       const feeds = {
-        input_ids:      new ort.Tensor("int32", Int32Array.from(inputIds),       [1, inputIds.length]),
-        attention_mask: new ort.Tensor("int32", Int32Array.from(attentionMask),  [1, attentionMask.length]),
-        position_ids:   new ort.Tensor("int32", Int32Array.from(positionIds),    [1, positionIds.length]),
+        // input_ids: int64 tensor
+        input_ids:      new ort.Tensor(
+                          "int64",
+                          BigInt64Array.from(inputIds, x => BigInt(x)),
+                          [1, inputIds.length]
+                        ),
+        // attention_mask: int64 tensor
+        attention_mask: new ort.Tensor(
+                          "int64",
+                          BigInt64Array.from(attentionMask, _ => BigInt(1)),
+                          [1, attentionMask.length]
+                        ),
+        // position_ids: int64 tensor
+        position_ids:   new ort.Tensor(
+                          "int64",
+                          BigInt64Array.from(positionIds, x => BigInt(x)),
+                          [1, positionIds.length]
+                        ),
         ...pastFeeds
       };
 
       // run one autoregressive step
       const outputs = await session.run(feeds);
 
-      // greedy decode
+      // greedy decode: find highest-logit
       const logits = outputs.logits.data;
-      let maxLogit = -Infinity, nextId = 0;
+      let maxL = -Infinity, nextId = 0;
       for (let i = 0; i < logits.length; i++) {
-        if (logits[i] > maxLogit) {
-          maxLogit = logits[i];
-          nextId = i;
-        }
+        if (logits[i] > maxL) { maxL = logits[i]; nextId = i; }
       }
       generatedIds.push(nextId);
 
-      // prepare for next step
-      inputIds = [ nextId ];
+      // prepare next-step inputs
+      inputIds      = [ nextId ];
       attentionMask = [ 1 ];
-      positionIds = [ currentPosition ];
+      positionIds   = [ currentPosition ];
       currentPosition++;
 
       // swap in new cache values
@@ -112,20 +119,18 @@
           pastFeeds[pastName] = outputs[k];
         }
       }
-
-      // optionally break on EOS id (if you know it)
     }
 
-    // return generated text
+    // decode and return text
     return decoder.decode(new Uint8Array(generatedIds));
   }
 
-  // wire up the buttons
+  // wire up buttons
   document.getElementById("generate").onclick = async () => {
-    const prompt = document.getElementById("prompt").value.trim() || "Once upon a time";
+    const p = document.getElementById("prompt").value.trim() || "Once upon a time";
     document.getElementById("story").textContent = "⏳ Generating…";
-    const tale = await generateStory(prompt);
-    document.getElementById("story").textContent = prompt + tale;
+    const tale = await generateStory(p);
+    document.getElementById("story").textContent = p + tale;
   };
 
   document.getElementById("random").onclick = () => {

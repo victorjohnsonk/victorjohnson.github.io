@@ -28,28 +28,38 @@
 </head>
 <body>
   <h1>Bedtime Story Generator</h1>
-
   <input id="prompt" placeholder="Enter a story prompt…" />
-
   <div class="button-container">
     <button onclick="generateStory()">Generate Story</button>
     <button id="random-btn" onclick="generateRandomStory()">Random Story</button>
   </div>
-
   <div id="loading">Generating story…</div>
   <div id="story"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
   <script>
-    // —————————————————————————————
-    // Adjust these to match your ONNX export
-    // —————————————————————————————
-    const CACHE_NUM_HEADS = 16;  // number of attention heads in your model
-    const CACHE_HEAD_SIZE = 4;   // head_dim = hidden_size / heads (e.g. 64/16)
+    // ─────────────────────────────────────────────────
+    // Disable multi-threading warning by falling back to 1 thread
+    ort.env.wasm.numThreads = 1;
+    // ─────────────────────────────────────────────────
 
-    let session = null;
+    // ─────────────── CONFIG ───────────────
+    const CACHE_NUM_HEADS = 16;   // your model’s number of attention heads
+    const CACHE_HEAD_SIZE = 4;    // head_dim = hidden_size / heads (e.g. 64/16)
+    const MAX_NEW_TOKENS  = 50;   // how many tokens to generate
+    const EOS_TOKEN_ID    = 2;    // your model’s end‐of‐sequence token ID
 
-    // Load the ONNX model once
+    let session = null;           // ONNX InferenceSession
+    let vocab   = null;           // id→token map from vocab.json
+
+    // ───────── LOAD VOCAB.JSON ─────────
+    async function loadVocab() {
+      const resp = await fetch('./models/TinyStories-Instruct-1M/vocab.json');
+      vocab = await resp.json();
+      console.log('Vocab loaded, size=', Object.keys(vocab).length);
+    }
+
+    // ───────── INIT ONNX MODEL ──────────
     async function initModel() {
       session = await ort.InferenceSession.create(
         './models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx',
@@ -59,9 +69,11 @@
       console.log('Model outputs:', session.outputNames);
     }
 
-    // Dummy whitespace tokenizer — replace with your real one
+    // ───────── DUMMY TOKENIZER ───────────
+    // Replace with your real tokenizer
     function tokenize(text) {
-      const ids = text.split(' ').map((_, i) => i + 1);
+      const words = text.split(' ');
+      const ids = words.map((_, i) => i + 1);
       return new ort.Tensor(
         'int64',
         BigInt64Array.from(ids.map(BigInt)),
@@ -69,18 +81,111 @@
       );
     }
 
-    // Dummy detokenizer — replace with real vocab lookup
-    function detokenize(tensor) {
-      const arr = Array.from(tensor.data);
-      return 'Once upon a time, ' + arr.join(' ') + '…';
+    // ───────── ONE‐STEP INFERENCE ────────
+    // Feeds a single token + cache, returns logits & updated cache
+    async function step(inputId, allTokenIds, past) {
+      const seqLen = allTokenIds.length;
+      // single new token
+      const inputIds = new ort.Tensor(
+        'int64',
+        BigInt64Array.from([BigInt(inputId)]),
+        [1, 1]
+      );
+      // attention_mask over full history
+      const attentionMask = new ort.Tensor(
+        'int64',
+        BigInt64Array.from(allTokenIds.map(BigInt)),
+        [1, seqLen]
+      );
+      // position_ids = [0,1,...,seqLen-1]
+      const positionIds = new ort.Tensor(
+        'int64',
+        BigInt64Array.from(allTokenIds.map((_,i)=>BigInt(i))),
+        [1, seqLen]
+      );
+
+      const feeds = {
+        input_ids:      inputIds,
+        attention_mask: attentionMask,
+        position_ids:   positionIds,
+        ...past
+      };
+
+      // on the very first step, past will be null → zero-fill cache
+      if (!past) {
+        for (const name of session.inputNames) {
+          if (name.startsWith('past_key_values.')) {
+            const dims = [1, CACHE_NUM_HEADS, 0, CACHE_HEAD_SIZE];
+            feeds[name] = new ort.Tensor(
+              'float32',
+              new Float32Array(0),
+              dims
+            );
+          }
+        }
+      }
+
+      const output = await session.run(feeds);
+
+      // extract logits (first output or named “logits”)
+      const logits = output.logits ?? output[session.outputNames[0]];
+      // extract updated cache
+      const newPast = {};
+      for (const k of session.outputNames) {
+        if (k.startsWith('past_key_values.')) {
+          newPast[k] = output[k];
+        }
+      }
+
+      return { logits: logits.data, past: newPast };
     }
 
+    // ───────── GENERATION LOOP ──────────
+    async function runInference(prompt) {
+      document.getElementById('story').innerHTML = '';
+      document.getElementById('loading').style.display = 'block';
+
+      if (!session) await initModel();
+      if (!vocab)   await loadVocab();
+
+      // initial token IDs from prompt
+      let tokenIds = Array.from(tokenize(prompt).data, x => Number(x));
+      let past     = null;
+
+      for (let stepIdx = 0; stepIdx < MAX_NEW_TOKENS; stepIdx++) {
+        const lastId = tokenIds[tokenIds.length - 1];
+        const { logits, past: newPast } = await step(lastId, tokenIds, past);
+        past = newPast;
+
+        // greedy argmax
+        let best = -Infinity, nextId = 0;
+        for (let i = 0; i < logits.length; i++) {
+          if (logits[i] > best) {
+            best = logits[i];
+            nextId = i;
+          }
+        }
+        tokenIds.push(nextId);
+        if (nextId === EOS_TOKEN_ID) break;
+      }
+
+      // decode via vocab.json
+      let text = '';
+      for (let id of tokenIds) {
+        let tok = vocab[id] || '<unk>';
+        text += tok.startsWith('Ġ') ? ' ' + tok.slice(1) : tok;
+      }
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('story').innerHTML = `<p>${text.trim()}</p>`;
+    }
+
+    // ───────── BUTTON HANDLERS ──────────
     async function generateStory() {
       const p = document.getElementById('prompt').value.trim();
       if (!p) return alert('Please enter a prompt.');
       await runInference(p);
     }
-
     async function generateRandomStory() {
       const pool = [
         'A curious fox in a glowing forest',
@@ -94,71 +199,9 @@
       await runInference(p);
     }
 
-    async function runInference(prompt) {
-      document.getElementById('story').innerHTML = '';
-      document.getElementById('loading').style.display = 'block';
-
-      if (!session) await initModel();
-
-      // 1) Tokenize + build attention_mask + position_ids
-      const inputIds = tokenize(prompt);
-      const seqLen   = inputIds.dims[1];
-
-      const maskArr = Array.from({ length: seqLen }, () => BigInt(1));
-      const attentionMask = new ort.Tensor(
-        'int64',
-        BigInt64Array.from(maskArr),
-        [1, seqLen]
-      );
-
-      const posArr = Array.from({ length: seqLen }, (_, i) => BigInt(i));
-      const positionIds = new ort.Tensor(
-        'int64',
-        BigInt64Array.from(posArr),
-        [1, seqLen]
-      );
-
-      // 2) Base feeds
-      const feeds = {
-        input_ids:      inputIds,
-        attention_mask: attentionMask,
-        position_ids:   positionIds
-      };
-
-      // 3) Zero-fill every past_key_values.* input
-      for (const name of session.inputNames) {
-        if (name.startsWith('past_key_values.')) {
-          const dims = [1, CACHE_NUM_HEADS, 0, CACHE_HEAD_SIZE];
-          const size = dims.reduce((a, b) => a * b, 1);  // = 0
-          feeds[name] = new ort.Tensor(
-            'float32',
-            new Float32Array(size),
-            dims
-          );
-        }
-      }
-
-      try {
-        // 4) Run the model
-        const outputMap = await session.run(feeds);
-
-        // 5) Grab the main output tensor dynamically
-        const mainOutName = session.outputNames[0];
-        const outTensor   = outputMap[mainOutName];
-        const storyText   = detokenize(outTensor);
-
-        document.getElementById('story').innerHTML = `<p>${storyText}</p>`;
-      } catch (e) {
-        console.error('Inference error:', e);
-        document.getElementById('story')
-          .innerHTML = '<p>Something went wrong—check console.</p>';
-      } finally {
-        document.getElementById('loading').style.display = 'none';
-      }
-    }
-
-    // Preload the model on page load
+    // ───────── PRELOAD MODEL & VOCAB ──────────
     initModel();
+    loadVocab();
   </script>
 </body>
 </html>

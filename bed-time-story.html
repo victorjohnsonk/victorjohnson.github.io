@@ -77,35 +77,41 @@
 
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
     <script>
-        // Initialize ONNX Runtime session
+        // Global session handle
         let session = null;
+
+        // 1) Initialize ONNX model
         async function initModel() {
             try {
-                session = await ort.InferenceSession.create('./models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx', {
-                    executionProviders: ['wasm']
-                });
+                session = await ort.InferenceSession.create(
+                    './models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx',
+                    { executionProviders: ['wasm'] }
+                );
                 console.log('Model loaded successfully');
-            } catch (error) {
-                console.error('Failed to load model:', error);
-                document.getElementById('story').innerHTML = '<p>Error loading model. Please check the console.</p>';
+                console.log('Inputs:', session.inputNames);
+            } catch (err) {
+                console.error('Failed to load model:', err);
+                document.getElementById('story').innerHTML =
+                    '<p>Error loading model. Please check the console.</p>';
             }
         }
 
-        // Placeholder tokenizer (replace with actual tokenizer, e.g., from transformers.js)
+        // 2) Dummy tokenizer — replace with a real one
         function tokenize(prompt) {
-            // This is a dummy tokenizer; replace with real tokenization logic
-            // Example: Use Hugging Face's transformers.js or a custom tokenizer
-            const tokens = prompt.split(' ').map((word, i) => i + 1); // Dummy token IDs
-            return new ort.Tensor('int64', BigInt64Array.from(tokens.map(BigInt)), [1, tokens.length]);
+            const tokens = prompt.split(' ').map((_, i) => i + 1);
+            return new ort.Tensor('int64',
+                BigInt64Array.from(tokens.map(BigInt)),
+                [1, tokens.length]);
         }
 
-        // Placeholder detokenizer (replace with actual detokenizer)
+        // 3) Dummy detokenizer — replace with a real one
         function detokenize(tokenIds) {
-            // This is a dummy detokenizer; replace with real decoding logic
-            // Example: Map token IDs back to words using a vocab
-            return 'Once upon a time, ' + tokenIds.data.join(' ') + '... (This is a placeholder story)';
+            return 'Once upon a time, ' +
+                   tokenIds.data.join(' ') +
+                   '... (This is a placeholder story)';
         }
 
+        // 4) Hooked to “Generate Story” button
         async function generateStory() {
             const prompt = document.getElementById('prompt').value.trim();
             if (!prompt) {
@@ -115,6 +121,7 @@
             await runInference(prompt);
         }
 
+        // 5) Hooked to “Random Story” button
         async function generateRandomStory() {
             const randomPrompts = [
                 'A curious fox in a glowing forest',
@@ -123,13 +130,16 @@
                 'A magical treehouse adventure',
                 'A friendly ghost in a cozy village'
             ];
-            const prompt = randomPrompts[Math.floor(Math.random() * randomPrompts.length)];
+            const prompt = randomPrompts[
+                Math.floor(Math.random() * randomPrompts.length)
+            ];
             document.getElementById('prompt').value = prompt;
             await runInference(prompt);
         }
 
+        // 6) The patched inference function
         async function runInference(prompt) {
-            const storyDiv = document.getElementById('story');
+            const storyDiv   = document.getElementById('story');
             const loadingDiv = document.getElementById('loading');
             storyDiv.innerHTML = '';
             loadingDiv.style.display = 'block';
@@ -140,28 +150,50 @@
                     if (!session) throw new Error('Model initialization failed');
                 }
 
-                // Tokenize input prompt
+                // --- tokenization & mask ---
                 const inputTensor = tokenize(prompt);
+                const seqLen = inputTensor.dims[1];
+                const maskData = BigInt64Array.from(
+                    Array(seqLen).fill(1).map(BigInt)
+                );
+                const attentionMask = new ort.Tensor('int64', maskData, [1, seqLen]);
 
-                // Run inference
-                // Fixed: Use 'input_ids' as the input name expected by the model
-                const feeds = { input_ids: inputTensor };
+                // --- build feeds with required inputs ---
+                const feeds = {
+                    input_ids:      inputTensor,
+                    attention_mask: attentionMask
+                };
+
+                // Zero-fill *all* past_key_values.* inputs on first pass
+                for (let name of session.inputNames) {
+                    if (name.startsWith('past_key_values')) {
+                        const meta = session.inputMetadata[name];
+                        const dims = meta.dimensions.map(d => d || 0);
+                        const size = dims.reduce((a, b) => a * b, 1);
+                        feeds[name] = new ort.Tensor('float32',
+                                                    new Float32Array(size),
+                                                    dims);
+                    }
+                }
+
+                // --- run the model ---
                 const output = await session.run(feeds);
 
-                // TODO: Replace 'output' with the actual output tensor name (check model with Netron)
-                const outputTensor = output.output;
-                const storyText = detokenize(outputTensor);
+                // --- decode and display ---
+                const outputTensor = output.output;  // adjust if your model names it differently
+                const storyText    = detokenize(outputTensor);
 
                 loadingDiv.style.display = 'none';
                 storyDiv.innerHTML = `<p>${storyText}</p>`;
             } catch (error) {
                 loadingDiv.style.display = 'none';
-                storyDiv.innerHTML = '<p>Sorry, something went wrong. Please try again.</p>';
+                storyDiv.innerHTML =
+                    '<p>Sorry, something went wrong. Please try again.</p>';
                 console.error('Inference error:', error);
             }
         }
 
-        // Initialize model on page load
+        // 7) Kick off model loading as soon as the page loads
         initModel();
     </script>
 </body>

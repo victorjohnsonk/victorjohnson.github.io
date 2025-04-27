@@ -1,109 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>TinyStories Bedtime (no-past)</title>
-
-  <!-- ONNX Runtime Web -->
-  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
-  <script>
-    // point at the CDN WASM runners
-    ort.env.wasm.wasmPaths = {
-      "ort-wasm.wasm":               "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm.wasm",
-      "ort-wasm-simd.wasm":          "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-simd.wasm",
-      "ort-wasm-threaded.wasm":      "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-threaded.wasm",
-      "ort-wasm-simd-threaded.wasm": "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm"
-    };
-  </script>
-
-  <style>
-    body { font-family: sans-serif; max-width:600px; margin:2em auto; }
-    textarea { width:100%; box-sizing:border-box; font-size:1em; }
-    button { margin:.5em .5em 0 0; padding:.5em 1em; }
-    pre { background:#f4f4f4; padding:1em; white-space:pre-wrap; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bedtime Story Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f4f8;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .input-container {
+            margin-bottom: 20px;
+        }
+        #prompt {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #random-btn {
+            background-color: #008CBA;
+        }
+        #random-btn:hover {
+            background-color: #007399;
+        }
+        #story {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            min-height: 100px;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-  <h1>🛏️ TinyStories Bedtime (no-past)</h1>
-  <textarea id="prompt" rows="4" placeholder="Once upon a time…"></textarea><br>
-  <button id="generate">Generate Story</button>
-  <button id="random">Random Story</button>
-  <pre id="story"></pre>
+    <h1>Bedtime Story Generator</h1>
+    <div class="input-container">
+        <input type="text" id="prompt" placeholder="Enter a story prompt (e.g., 'A brave kitten in a magical forest')">
+    </div>
+    <div class="button-container">
+        <button onclick="generateStory()">Generate Story</button>
+        <button id="random-btn" onclick="generateRandomStory()">Random Story</button>
+    </div>
+    <div id="loading">Generating story...</div>
+    <div id="story"></div>
 
-  <script>
-    // 1) Load the no-past ONNX model
-    const sessionPromise = ort.InferenceSession.create(
-      "./models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx",
-      { executionProviders: ["wasm"] }
-    );
-
-    // 2) Some default prompts
-    const DEFAULT_PROMPTS = [
-      "A brave little snail goes on an adventure",
-      "A friendly dragon who loves cookies",
-      "A lost kitten in a magical forest",
-      "A spaceship that tells bedtime stories",
-      "A curious cloud exploring the sky"
-    ];
-
-    // 3) Full-history greedy loop
-    async function generateStory(promptText, maxNewTokens = 64) {
-      const session = await sessionPromise;
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
-
-      // start with the prompt tokens
-      let allIds = Array.from(encoder.encode(promptText));
-
-      for (let step = 0; step < maxNewTokens; step++) {
-        // build int64 tensors for the entire history
-        const inputIds = new ort.Tensor(
-          "int64",
-          BigInt64Array.from(allIds, x => BigInt(x)),
-          [1, allIds.length]
-        );
-        const attentionMask = new ort.Tensor(
-          "int64",
-          BigInt64Array.from(allIds.map(_=>1), _=>BigInt(1)),
-          [1, allIds.length]
-        );
-
-        // run the model
-        const { logits } = await session.run({ input_ids: inputIds, attention_mask: attentionMask });
-
-        // logits.shape = [1, seq_len, vocab_size]; take the last position
-        const vocab = logits.dims[2];
-        const base = (allIds.length - 1) * vocab;
-        const data = logits.data;
-        // greedy argmax over the last-timestep slice
-        let maxLogit = -Infinity, nextId = 0;
-        for (let i = 0; i < vocab; i++) {
-          const v = data[base + i];
-          if (v > maxLogit) { maxLogit = v; nextId = i; }
+    <script>
+        async function generateStory() {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt or use the Random Story button.');
+                return;
+            }
+            await fetchStory(prompt);
         }
 
-        allIds.push(nextId);
+        async function generateRandomStory() {
+            const randomPrompts = [
+                'A curious fox in a glowing forest',
+                'A tiny dragon who lost its fire',
+                'A bunny exploring a starry meadow',
+                'A magical treehouse adventure',
+                'A friendly ghost in a cozy village'
+            ];
+            const prompt = randomPrompts[Math.floor(Math.random() * randomPrompts.length)];
+            document.getElementById('prompt').value = prompt;
+            await fetchStory(prompt);
+        }
 
-        // (optional) stop if you hit EOS token
-      }
+        async function fetchStory(prompt) {
+            const storyDiv = document.getElementById('story');
+            const loadingDiv = document.getElementById('loading');
+            storyDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
 
-      // decode only the newly generated portion
-      const newIds = allIds.slice(encoder.encode(promptText).length);
-      return decoder.decode(new Uint8Array(newIds));
-    }
+            try {
+                // Placeholder for backend API call
+                // Replace with actual endpoint for your ONNX model inference
+                const response = await fetch('/api/generate-story', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
 
-    // wire up UI
-    document.getElementById("generate").onclick = async () => {
-      const p = document.getElementById("prompt").value.trim() || "Once upon a time";
-      document.getElementById("story").textContent = "⏳ Generating…";
-      const tale = await generateStory(p, 128);
-      document.getElementById("story").textContent = p + tale;
-    };
-    document.getElementById("random").onclick = () => {
-      const idx = Math.floor(Math.random()*DEFAULT_PROMPTS.length);
-      document.getElementById("prompt").value = DEFAULT_PROMPTS[idx];
-      document.getElementById("generate").click();
-    };
-  </script>
+                if (!response.ok) throw new Error('Failed to generate story');
+
+                const data = await response.json();
+                loadingDiv.style.display = 'none';
+                storyDiv.innerHTML = `<p>${data.story}</p>`;
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                storyDiv.innerHTML = '<p>Sorry, something went wrong. Please try again.</p>';
+                console.error(error);
+            }
+        }
+    </script>
 </body>
 </html>

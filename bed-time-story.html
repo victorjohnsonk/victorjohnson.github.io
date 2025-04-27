@@ -2,59 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Bed-Time Story Generator (CDN)</title>
+  <title>Bed-Time Story Generator</title>
 
-  <!-- 1. Pull in ONNX Runtime Web from CDN -->
+  <!-- ONNX Runtime from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
   <script>
-    // 2. (Optional) Explicitly point to the CDN‐hosted WASM runtime
-    //    so it never looks for local .wasm/.jsep files.
+    // Tell ORT where its WASM backends live
     ort.env.wasm.wasmPaths = {
-      "ort-wasm.wasm": "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm.wasm",
-      "ort-wasm-simd.wasm": "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-simd.wasm",
-      "ort-wasm-threaded.wasm": "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-threaded.wasm",
-      "ort-wasm-simd-threaded.wasm": "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm"
+      "ort-wasm.wasm":                 "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm.wasm",
+      "ort-wasm-simd.wasm":            "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-simd.wasm",
+      "ort-wasm-threaded.wasm":        "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-threaded.wasm",
+      "ort-wasm-simd-threaded.wasm":   "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm"
     };
   </script>
 
   <style>
     body { font-family: sans-serif; padding: 2em; }
     textarea { width: 100%; box-sizing: border-box; }
-    button { margin-top: 0.5em; padding: 0.5em 1em; }
+    button { margin-top: .5em; padding: .5em 1em; }
     pre { background: #f4f4f4; padding: 1em; white-space: pre-wrap; }
   </style>
 </head>
 <body>
   <h1>Bed-Time Story Generator</h1>
-
   <textarea id="prompt" rows="4" placeholder="Once upon a time…"></textarea><br>
   <button id="generate">Tell me a story!</button>
-
   <pre id="story"></pre>
 
   <script>
-    // 3. Load your TinyStories model from your own /models folder
+    // load your model from the nested folder
     const sessionPromise = ort.InferenceSession.create(
-      "./models/TinyStories-Instruct-1M.onnx",
+      "./models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx",
       { executionProviders: ["wasm"] }
     );
 
     async function generateStory() {
-      const prompt = document.getElementById("prompt").value.trim() || "Once upon a time";
-
-      // UTF-8 → int32 tokenization
-      const encoder = new TextEncoder();
-      const inputBytes = encoder.encode(prompt);
-      const len = inputBytes.length;
-
-      const inputIds      = new ort.Tensor("int32", Int32Array.from(inputBytes),        [1, len]);
+      const txt = document.getElementById("prompt").value.trim() || "Once upon a time";
+      const bytes = new TextEncoder().encode(txt);
+      const len   = bytes.length;
+      const inputIds      = new ort.Tensor("int32", Int32Array.from(bytes),      [1, len]);
       const attentionMask = new ort.Tensor("int32", Int32Array.from(new Array(len).fill(1)), [1, len]);
 
       const session = await sessionPromise;
-      const outputs = await session.run({ input_ids: inputIds, attention_mask: attentionMask });
-
-      // assume model returns raw UTF-8 bytes in `output_ids`
-      const story = new TextDecoder().decode(new Uint8Array(outputs.output_ids.data));
+      const { output_ids } = await session.run({ input_ids: inputIds, attention_mask: attentionMask });
+      const story = new TextDecoder().decode(new Uint8Array(output_ids.data));
       document.getElementById("story").textContent = story;
     }
 

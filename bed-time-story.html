@@ -75,14 +75,44 @@
     <div id="loading">Generating story...</div>
     <div id="story"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
     <script>
+        // Initialize ONNX Runtime session
+        let session = null;
+        async function initModel() {
+            try {
+                session = await ort.InferenceSession.create('./models/TinyStories-Instruct-1M/TinyStories-Instruct-1M.onnx', {
+                    executionProviders: ['wasm']
+                });
+                console.log('Model loaded successfully');
+            } catch (error) {
+                console.error('Failed to load model:', error);
+                document.getElementById('story').innerHTML = '<p>Error loading model. Please check the console.</p>';
+            }
+        }
+
+        // Placeholder tokenizer (replace with actual tokenizer, e.g., from transformers.js)
+        function tokenize(prompt) {
+            // This is a dummy tokenizer; replace with real tokenization logic
+            // Example: Use Hugging Face's transformers.js or a custom tokenizer
+            const tokens = prompt.split(' ').map((word, i) => i + 1); // Dummy token IDs
+            return new ort.Tensor('int64', BigInt64Array.from(tokens.map(BigInt)), [1, tokens.length]);
+        }
+
+        // Placeholder detokenizer (replace with actual detokenizer)
+        function detokenize(tokenIds) {
+            // This is a dummy detokenizer; replace with real decoding logic
+            // Example: Map token IDs back to words using a vocab
+            return 'Once upon a time, ' + tokenIds.data.join(' ') + '... (This is a placeholder story)';
+        }
+
         async function generateStory() {
             const prompt = document.getElementById('prompt').value.trim();
             if (!prompt) {
                 alert('Please enter a prompt or use the Random Story button.');
                 return;
             }
-            await fetchStory(prompt);
+            await runInference(prompt);
         }
 
         async function generateRandomStory() {
@@ -95,35 +125,44 @@
             ];
             const prompt = randomPrompts[Math.floor(Math.random() * randomPrompts.length)];
             document.getElementById('prompt').value = prompt;
-            await fetchStory(prompt);
+            await runInference(prompt);
         }
 
-        async function fetchStory(prompt) {
+        async function runInference(prompt) {
             const storyDiv = document.getElementById('story');
             const loadingDiv = document.getElementById('loading');
             storyDiv.innerHTML = '';
             loadingDiv.style.display = 'block';
 
             try {
-                // Placeholder for backend API call
-                // Replace with actual endpoint for your ONNX model inference
-                const response = await fetch('/api/generate-story', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt })
-                });
+                if (!session) {
+                    await initModel();
+                    if (!session) throw new Error('Model initialization failed');
+                }
 
-                if (!response.ok) throw new Error('Failed to generate story');
+                // Tokenize input prompt
+                const inputTensor = tokenize(prompt);
 
-                const data = await response.json();
+                // Run inference
+                // Replace 'input' with the actual input name expected by your model
+                const feeds = { input: inputTensor };
+                const output = await session.run(feeds);
+
+                // Assume the model outputs a tensor named 'output' (replace with actual output name)
+                const outputTensor = output.output;
+                const storyText = detokenize(outputTensor);
+
                 loadingDiv.style.display = 'none';
-                storyDiv.innerHTML = `<p>${data.story}</p>`;
+                storyDiv.innerHTML = `<p>${storyText}</p>`;
             } catch (error) {
                 loadingDiv.style.display = 'none';
                 storyDiv.innerHTML = '<p>Sorry, something went wrong. Please try again.</p>';
-                console.error(error);
+                console.error('Inference error:', error);
             }
         }
+
+        // Initialize model on page load
+        initModel();
     </script>
 </body>
 </html>

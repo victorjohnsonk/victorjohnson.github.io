@@ -11,7 +11,7 @@ const page = () => {
     <div className="space-y-5">
       <Hero />
       <Skills />
-      <ProjectsFeatured />
+       //<ProjectsFeatured />
       <Experience />
       <Certificate />
       <Education />

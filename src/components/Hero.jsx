@@ -9,14 +9,14 @@ const Hero = () => {
         <span>Hey there, I am</span>
         <h1 className="text-2xl font-medium lg:text-4xl">Victor Johnson</h1>
         <p className="font-light lg:text-xl">
-          Data Scientist | AI & Machine Learning | LLM & RAG | Advanced Analytics
+          Senior AI / LLM Engineer | Production RAG & LLM Systems | Data Science | Azure, Python
         </p>
         <p className="mt-5">
-          Data Scientist with over seven years of experience using analytics, machine learning, and business intelligence to solve complex problems and support strategic decisions.{' '}
+          Senior AI / LLM Engineer with 7+ years of experience building production LLM and GenAI systems, including RAG, intelligent search, and LLM-powered applications in Azure.{' '}
           <br className="hidden lg:block" />
-          Known for translating large and varied datasets into clear, actionable insights that help leaders respond quickly to business challenges.{' '}
+          I own LLM systems end-to-end: ingestion, embeddings, retrieval, prompt orchestration, evaluation, deployment, and monitoring, with a focus on reliability, performance, and cost in real products.{' '}
           <br className="hidden lg:block" />
-          Experienced in guiding small teams, developing scalable data platforms, and working closely with senior stakeholders to ensure data initiatives meet organisational priorities.
+          Core expertise: LLMs, RAG, vector search, LLM evaluation, Python, Azure OpenAI, Spark, MLOps etc.
         </p>
 
         {/* Availability */}
@@ -25,7 +25,7 @@ const Hero = () => {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lime-400 opacity-75"></span>
             <span className="relative inline-flex size-3 rounded-full bg-lime-500"></span>
           </span>
-          <p>Norwich, England, United Kingdom</p>
+          <p>England, United Kingdom</p>
         </div>
 
         {/* Buttons with icons */}

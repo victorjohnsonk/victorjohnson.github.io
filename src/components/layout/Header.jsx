@@ -33,13 +33,13 @@ const Header = () => {
         {/* 🧭 Desktop Navigation */}
         <nav className="hidden items-center space-x-8 text-base text-lime-400 md:flex">
           {/* Projects */}
-          <Link href="/projects" className="inline-flex items-center gap-1.5 hover:text-lime-300">
+          <Link href="/projects/" className="inline-flex items-center gap-1.5 hover:text-lime-300">
             <FaFolderOpen className="h-4 w-4" />
             Projects
           </Link>
 
           {/* Blog */}
-          <Link href="/blog" className="inline-flex items-center gap-1.5 hover:text-lime-300">
+          <Link href="/blog/" className="inline-flex items-center gap-1.5 hover:text-lime-300">
             <FaPenNib className="h-4 w-4" />
             Blog
           </Link>

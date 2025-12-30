@@ -12,12 +12,27 @@ const experiences = [
     end: 'Present',
     location: 'England, United Kingdom · Hybrid',
     description: `
-Driving the design and implementation of AI, LLM, and RAG-based solutions for internal tools, ranking systems, and intelligent knowledge discovery.
-Leading a data audit and governance function, introducing compliance and automation processes that improved data accuracy and reduced reporting time by 40%.
-Partnered with senior executives to design analytics approaches that informed investment decisions, financial planning, and operational priorities.
-Built scalable data pipelines with Apache Spark and Azure Synapse to deliver near real-time analytics, enabling faster response to business changes.
-Created financial KPI monitoring tools in Power BI with advanced DAX, helping budget owners track performance and adjust plans proactively.
-Developed forecasting and statistical models to predict revenue, visitors, and clicks, improving planning accuracy and resource allocation.`,
+Operating as a senior individual contributor, leading the design, deployment, and operation of production LLM and RAG systems end-to-end.
+
+AI / LLM Systems (Primary):
+- Led development of production-grade LLM and RAG solutions, owning ingestion, embedding pipelines, retrieval, prompt orchestration, evaluation, deployment, and monitoring
+- Built LLM-powered intelligent search, chatbots, and ranking workflows used in internal products
+- Designed and implemented LLM evaluation frameworks (precision/recall, F1, BLEU, ROUGE, relevance & faithfulness metrics) to measure quality and reduce hallucinations
+- Implemented prompt strategies, grounding logic, guardrails, and output validation to improve reliability and safety in live systems
+- Fine-tuned transformer and LLM models on domain-specific data to improve retrieval accuracy and contextual relevance
+- Built scalable data preparation pipelines (cleaning, tokenization, chunking, embeddings) for training and fine-tuning
+- Ran A/B tests and benchmarks across models, embeddings, retrievers, and prompt variants to optimize quality, latency, and cost
+
+Machine Learning & Applied Analytics (Secondary):
+- Developed forecasting models for revenue, traffic, and user activity using Python and ML frameworks
+- Built statistical models to support scenario planning and financial analysis
+- Created automated insights pipelines using GA4, GSC, and internal data sources
+
+Data Engineering & Platform:
+- Built scalable data pipelines using Apache Spark and Azure Synapse to support near real-time analytics and ML workloads
+- Optimized complex SQL / T-SQL queries (CTEs, window functions, indexing) to improve performance
+- Designed KPI dashboards in Power BI and Streamlit using advanced DAX and Python
+- Improved data quality through governance, validation, and automated checks, reducing reporting turnaround time by ~40%`,
   },
   {
     title: 'Data Scientist',
@@ -27,11 +42,21 @@ Developed forecasting and statistical models to predict revenue, visitors, and c
     end: 'Dec 2020',
     location: 'Bengaluru, India · On-site',
     description: `
-Designed predictive maintenance solutions using Remaining Useful Life forecasting to reduce downtime and improve train availability.
-Built an internal R analytics toolkit with Qlik Sense integration, standardising analytical workflows across business units.
-Managed a small data engineering team, setting standards for ingestion, transformation, and warehousing.
-Created dashboards in Shiny, Qlik Sense, and Tableau to help executives review KPIs quickly.
-Performed exploratory analysis on train telemetry data using Python and R, identifying anomalies and operational inefficiencies.`,
+Applied Machine Learning & Predictive Systems:
+- Developed production machine learning models for predictive maintenance, including Remaining Useful Life (RUL) estimation for critical train components
+- Built time-series and survival analysis models to predict failures, degradation, and maintenance needs across multiple subsystems
+- Analyzed high-volume telemetry data to identify failure patterns, sensor drift, and anomalous behavior in operational environments
+- Designed component-level health indicators and engineered features that improved prediction accuracy and model stability
+
+Data Engineering & Model Integration
+- Implemented robust data validation, preprocessing, and feature pipelines to ensure reliability of sensor and operational data
+- Integrated predictive models into operational reporting and decision-support systems, enabling faster and more informed maintenance decisions
+- Supported condition-based maintenance strategies that improved fleet availability and reduced unplanned downtime
+
+Analytics Platforms & Visualization
+- Built dashboards in Shiny, Qlik Sense, and Tableau to visualize asset health, predictions, and maintenance KPIs
+- Contributed to the setup of the operations center by delivering KPI-driven visualizations and automated model outputs
+- Applied IEC 62541 standards to improve data acquisition consistency and interoperability across systems`,
   },
   {
     title: 'Junior Data Scientist',
@@ -41,10 +66,10 @@ Performed exploratory analysis on train telemetry data using Python and R, ident
     end: 'Dec 2018',
     location: 'Bengaluru, India · On-site',
     description: `
-Developed a semantic search engine using Elasticsearch and Flask to improve document access.
-Built automated ETL workflows with Apache Airflow, reducing manual effort.
-Implemented an SAP RPA solution to manage maintenance records, later adopted company-wide.
-Supported Spark and Kafka streaming workflow development for real-time telemetry data.`,
+- Built an early semantic search engine using Elasticsearch and Python (Flask), supporting information retrieval use cases
+- Developed automated ETL pipelines using Apache Airflow
+- Contributed to Spark and Kafka streaming workflows for real-time telemetry data processing
+- Built RPA workflows to automate SAP-based maintenance data handling`,
   },
   {
     title: 'Data Science Intern',
@@ -54,7 +79,8 @@ Supported Spark and Kafka streaming workflow development for real-time telemetry
     end: 'Nov 2017',
     location: 'Bengaluru, India · On-site',
     description: `
-Contributed to data analysis and automation workflows for NFC-enabled billing kiosks, supporting IoT product deployment.`,
+- Supported data analysis and automation workflows for NFC-enabled billing kiosks
+- Performed exploratory analysis to support process improvements`,
   },
   {
     title: 'Intern',
@@ -64,7 +90,7 @@ Contributed to data analysis and automation workflows for NFC-enabled billing ki
     end: 'Sep 2016',
     location: 'Bengaluru, India · On-site',
     description: `
-Automated routine business processes using VBA in Excel, saving over 10 hours per week in reporting tasks.`,
+- Automated routine business processes using VBA in Excel, ensuring compliance with internal data standards and improving efficiency, which saved more than 10 hours of reporting work each week`,
   },
 ];
 

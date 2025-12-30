@@ -14,11 +14,11 @@
     "remark-gfm": "^4.0.1",
     "xml2js": "^0.6.2"
   },
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "npx serve@latest ./build"
-  },
+ "scripts": {
+  "dev": "next dev --turbopack",
+  "build": "next build",
+  "start": "npx serve@latest out"
+},
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/typography": "^0.5.19",

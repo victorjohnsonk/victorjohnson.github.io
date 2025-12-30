@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const experiences = [
   {
-    title: 'Data Scientist',
+    title: 'Data Scientist (AI/LLM Focus)',
     company: 'SYMEUS',
     industry: 'Finance',
     start: 'Feb 2021',
@@ -35,7 +35,7 @@ Data Engineering & Platform:
 - Improved data quality through governance, validation, and automated checks, reducing reporting turnaround time by ~40%`,
   },
   {
-    title: 'Data Scientist',
+    title: 'Data Scientist (ML Focus)',
     company: 'Alstom',
     industry: 'Railways',
     start: 'Dec 2018',

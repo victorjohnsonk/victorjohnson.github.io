@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 const experiences = [
   {
     title: 'Data Scientist (AI/LLM Focus)',
-    company: 'SYMEUS',
+    company: 'SYMEUS LTD',
     industry: 'Finance',
     start: 'Feb 2021',
     end: 'Present',
@@ -141,7 +141,7 @@ export default function Experience() {
                 </div>
 
                 {/* Company */}
-                <p className="text-lime-400 font-medium">{exp.company}</p>
+                <p className="text-lime-400 font-medium">Company: {exp.company}</p>
 
                 {/* Location + Industry */}
                 <p className="text-xs text-zinc-400 italic">

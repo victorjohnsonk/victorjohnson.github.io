@@ -1,32 +1,15 @@
-import Link from 'next/link';
-import { parseStringPromise } from 'xml2js';
-import { HiArrowUpRight } from 'react-icons/hi2';
+import { HiArrowUpRight } from "react-icons/hi2";
+import { parseStringPromise } from "xml2js";
 
-export const revalidate = 3600; // Revalidate every hour
+export const dynamic = "error";
 
-// 🧠 Helper: Estimate read time (200 wpm)
-function estimateReadTime(html = '') {
-  const text = html.replace(/<[^>]*>/g, ' ');
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.ceil(words / 200));
-  return `${minutes} min read`;
-}
-
-// 🧠 Helper: Append UTM parameter to URL safely
-function addUTM(url = '') {
-  if (!url || url === '#') return '#';
-  const hasQuery = url.includes('?');
-  const separator = hasQuery ? '&' : '?';
-  return `${url}${separator}utm_source=victorjohnson.online`;
-}
-
-// 🧠 Fetch & parse Atom feed
 async function getAtomPosts() {
-  const res = await fetch('https://opendata.blog/atom.xml', {
-    next: { revalidate: 3600 },
-  });
+  const res = await fetch("https://opendata.blog/atom.xml");
 
-  if (!res.ok) throw new Error('Failed to fetch Atom feed');
+  if (!res.ok) {
+    return [];
+  }
+
   const xml = await res.text();
 
   const parsed = await parseStringPromise(xml, {
@@ -40,25 +23,31 @@ async function getAtomPosts() {
   return normalized.map((entry) => {
     const link =
       entry.link?.href ||
-      entry.link?.['@_href'] ||
-      (typeof entry.link === 'string' ? entry.link : '#');
+      entry.link?.["@_href"] ||
+      (typeof entry.link === "string" ? entry.link : "#");
 
     return {
-      title: entry.title || 'Untitled',
-      link: addUTM(link),
-      updated: entry.updated || '',
-      content: entry.content?._ || entry.content || '',
+      title: entry.title || "Untitled",
+      link,
+      updated: entry.updated || "",
+      content: entry.content?._ || entry.content || "",
     };
   });
 }
 
-// 🧠 Blog Page
+function estimateReadTime(html = "") {
+  const text = html.replace(/<[^>]*>/g, " ");
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  return `${minutes} min read`;
+}
+
 export default async function BlogPage() {
   const posts = await getAtomPosts();
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight text-zinc-100 border-l-4 border-lime-400 pl-4 mb-12">
+      <h1 className="mb-12 border-l-4 border-lime-400 pl-4 text-3xl font-semibold tracking-tight text-zinc-100">
         Blog
       </h1>
 
@@ -69,7 +58,7 @@ export default async function BlogPage() {
           return (
             <article
               key={index}
-              className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm transition hover:border-lime-400 hover:shadow-md"
+              className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 transition hover:border-lime-400"
             >
               <h3 className="mb-1 text-lg font-semibold text-white">
                 <a
@@ -82,31 +71,28 @@ export default async function BlogPage() {
                 </a>
               </h3>
 
-              <div className="mb-2 flex items-center gap-2 text-sm text-zinc-400">
+              <div className="mb-2 text-sm text-zinc-400">
                 {post.updated && (
                   <time dateTime={post.updated}>
-                    {new Date(post.updated).toLocaleDateString('en-GB', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
+                    {new Date(post.updated).toLocaleDateString("en-GB", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
                     })}
                   </time>
                 )}
-                <span>•</span>
-                <span>{readTime}</span>
+                {" • "}
+                {readTime}
               </div>
 
-              <div className="mt-3">
-                <a
-                  href={post.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-white hover:underline"
-                >
-                  Read article
-                  <HiArrowUpRight className="h-4 w-4" />
-                </a>
-              </div>
+              <a
+                href={post.link}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-zinc-400 hover:text-white"
+              >
+                Read article <HiArrowUpRight className="h-4 w-4" />
+              </a>
             </article>
           );
         })}

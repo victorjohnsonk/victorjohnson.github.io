@@ -1,18 +1,20 @@
 // src/app/projects/page.js
-import { getAllProjects } from '@/lib/projects';
-import ProjectCard from '@/components/ProjectCard';
+import { getAllProjects } from "@/lib/projects";
+import ProjectCard from "@/components/ProjectCard";
+
+export const dynamic = "error";
 
 export const metadata = {
-  title: 'Projects',
-  description: 'Selected projects, experiments, and case studies.',
+  title: "Projects",
+  description: "Selected projects, experiments, and case studies.",
 };
 
 export default async function ProjectsPage() {
-  const projects = getAllProjects();
+  const projects = await getAllProjects();
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight text-zinc-100 border-l-4 border-lime-400 pl-4 mb-12">
+      <h1 className="mb-12 border-l-4 border-lime-400 pl-4 text-3xl font-semibold tracking-tight text-zinc-100">
         Projects
       </h1>
 

@@ -131,7 +131,7 @@ const Hero = () => {
       {/* Profile image */}
       <div>
         <Image
-          src="/vj-photo.jpg"
+          src="/vj-photo.png"
           width={400}
           height={400}
           alt="Victor Johnson"

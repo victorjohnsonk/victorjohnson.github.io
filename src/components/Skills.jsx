@@ -5,66 +5,98 @@ import { motion } from 'framer-motion';
 
 const Skills = () => {
   const skills = [
-    
-    {
-      category: 'AI & Machine Learning',
-      items: [
-        'Large Language Models (LLMs)',
-        'Retrieval-Augmented Generation (RAG)',
-        'Scikit-learn',
-        'TensorFlow',
-        'PyTorch',
-        'OpenAI API',
-      ],
-    },
-    {
-      category: 'Data Engineering & Analytics',
-      items: [
-        'Apache Spark',
-        'Azure Synapse',
-        'Airflow',
-        'Kafka',
-        'Pandas',
-        'NumPy',
-      ],
-    },
-    {
-      category: 'Visualization & BI',
-      items: [
-        'PowerBI',
-        'DAX',
-        'Tableau',
-        'Streamlit',
-        'Qlik Sense',
-        'Matplotlib',
-        'Seaborn',
-      ],
-    },{
-      category: 'Languages',
-      items: ['Python', 'T-SQL', 'R', 'JavaScript'],
-    },
-    {
-      category: 'Cloud & Tools',
-      items: [
-        'Microsoft Azure',
-        'AWS',
-        'Git',
-        'GitHub',
-        'Jupyter',
-        'Google Colab',
-      ],
-    },
-    {
-      category: 'Other Skills',
-      items: [
-        'Data Governance',
-        'MLOps',
-        'ETL Automation',
-        'Statistical Modeling',
-        'Financial Analytics',
-      ],
-    },
-  ];
+  {
+    category: 'LLMs & Generative AI',
+    items: [
+      'Large Language Models (LLMs)',
+      'Generative AI',
+      'Prompt Engineering',
+      'Retrieval-Augmented Generation (RAG)',
+      'Semantic Search',
+      'Embeddings & Vector Search',
+      'Vector Databases',
+      'LLM Evaluation & Monitoring',
+      'LLMOps',
+      'Chatbot Development',
+      'LlamaIndex',
+      'Azure OpenAI',
+      'Azure AI Foundry',
+    ],
+  },
+  {
+    category: 'Machine Learning & NLP',
+    items: [
+      'Machine Learning',
+      'Applied Machine Learning',
+      'Natural Language Processing (NLP)',
+      'Scikit-learn',
+      'Artificial Intelligence (AI)',
+      'Predictive Maintenance',
+    ],
+  },
+  {
+    category: 'Data Science & Analytics',
+    items: [
+      'Data Science',
+      'Python',
+      'SQL',
+      'Transact-SQL (T-SQL)',
+      'Statistical Modeling',
+      'Data Visualization',
+      'Financial Modeling',
+    ],
+  },
+  {
+    category: 'Data Engineering & Big Data',
+    items: [
+      'Apache Spark',
+      'Azure Databricks',
+      'Apache Kafka',
+      'Kafka Streams',
+      'Apache Airflow',
+      'Azure Data Factory',
+      'Elasticsearch',
+      'Azure SQL',
+    ],
+  },
+  {
+    category: 'Knowledge Graphs & Search',
+    items: [
+      'Knowledge Graphs',
+      'Knowledge Graph Data Engineering',
+      'Semantic Search & Information Retrieval',
+    ],
+  },
+  {
+    category: 'MLOps & Production AI',
+    items: [
+      'MLOps',
+      'MLflow',
+      'Model Monitoring',
+      'Model Drift & Bias Detection',
+      'Docker',
+    ],
+  },
+  {
+    category: 'Cloud & Platforms',
+    items: [
+      'Microsoft Azure',
+      'Azure Machine Learning',
+      'Oracle Cloud Infrastructure (AI Foundations)',
+    ],
+  },
+  {
+    category: 'Software & APIs',
+    items: [
+      'FastAPI',
+      'REST APIs',
+      'Software Development',
+      'Git',
+      'GitHub',
+    ],
+  },
+];
+
 
   return (
     <section

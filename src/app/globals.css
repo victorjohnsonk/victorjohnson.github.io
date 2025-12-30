@@ -24,6 +24,17 @@ button {
   color: #e5e5e5; /* slightly muted white */
 }
 
+.prose p > img[src*="shields.io"] {
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
+}
+
+/* spacing between consecutive badges */
+.prose p > img[src*="shields.io"] + img[src*="shields.io"] {
+  margin-left: 0.5rem;
+}
+
 .prose p,
 .prose li,
 .prose span,

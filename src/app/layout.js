@@ -13,71 +13,25 @@ export const metadata = {
   title:
     'Victor Johnson | Senior AI & LLM Engineer | Production RAG & GenAI Systems',
   description:
-    'Senior AI & LLM Engineer with 7+ years of experience building production-grade LLM and Generative AI systems, including RAG, semantic search, and LLM-powered applications on Microsoft Azure. Specialist in end-to-end LLM systems: ingestion, embeddings, vector search, prompt orchestration, evaluation, deployment, and monitoring, with a strong focus on reliability, performance, and cost efficiency.',
+    'Senior AI & LLM Engineer with 7+ years of experience building production-grade LLM and Generative AI systems, including RAG, semantic search, and LLM-powered applications on Microsoft Azure. Specialist in end-to-end LLM systems: ingestion, embeddings, vector search, prompt orchestration, evaluation, deployment, and monitoring.',
   keywords: [
-    // Core role
     'Senior AI Engineer',
     'LLM Engineer',
     'Generative AI Engineer',
-    'AI Engineer UK',
-
-    // LLM & GenAI
+    'Production RAG',
     'Large Language Models',
-    'LLMs',
-    'Generative AI',
-    'Prompt Engineering',
     'Retrieval-Augmented Generation',
-    'RAG',
     'Semantic Search',
-    'Embeddings',
-    'Vector Search',
     'Vector Databases',
-    'LLM Evaluation',
-    'LLM Monitoring',
     'LLMOps',
-
-    // Azure & Cloud
     'Azure OpenAI',
-    'Microsoft Azure',
-    'Azure Machine Learning',
-    'Azure Databricks',
-    'Azure AI Foundry',
-
-    // ML & Data
     'Machine Learning',
-    'Applied Machine Learning',
     'Natural Language Processing',
-    'NLP',
-    'Data Science',
-    'Python',
-    'SQL',
-    'Apache Spark',
-
-    // Production & MLOps
     'MLOps',
-    'MLflow',
-    'Model Monitoring',
-    'Model Drift Detection',
-    'Docker',
-    'Production AI Systems',
-
-    // Search & Knowledge
-    'Knowledge Graphs',
-    'Knowledge Graph Data Engineering',
-    'Information Retrieval',
-
-    // Software
-    'FastAPI',
-    'REST APIs',
-    'Git',
-    'GitHub',
+    'Python',
+    'Apache Spark',
   ],
-  authors: [
-    {
-      name: 'Victor Johnson',
-      url: 'https://victorjohnson.online',
-    },
-  ],
+  authors: [{ name: 'Victor Johnson', url: 'https://victorjohnson.online' }],
   robots: 'index, follow',
   openGraph: {
     type: 'website',
@@ -86,7 +40,7 @@ export const metadata = {
     title:
       'Victor Johnson | Senior AI & LLM Engineer | Production RAG & GenAI',
     description:
-      'Senior AI & LLM Engineer specialising in production RAG, LLM evaluation, vector search, and GenAI systems on Azure. Building reliable, scalable, real-world AI products.',
+      'Senior AI & LLM Engineer specialising in production RAG, LLM evaluation, vector search, and GenAI systems on Azure.',
     images: [
       {
         url: '/vj-photo.png',
@@ -113,8 +67,63 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Victor Johnson',
+    url: 'https://victorjohnson.online',
+    image: 'https://victorjohnson.online/vj-photo.png',
+    jobTitle: 'Senior AI & LLM Engineer',
+    description:
+      'Senior AI & LLM Engineer specialising in production RAG, LLM systems, semantic search, and Generative AI on Microsoft Azure.',
+    sameAs: [
+      'https://www.linkedin.com/in/victorjohnsonk',
+      'https://github.com/victorjohnsonk',
+    ],
+    worksFor: {
+      '@type': 'Organization',
+      name: 'SYMEUS',
+    },
+    knowsAbout: [
+      'Large Language Models',
+      'Retrieval-Augmented Generation',
+      'Generative AI',
+      'LLMOps',
+      'Semantic Search',
+      'Vector Databases',
+      'Machine Learning',
+      'MLOps',
+      'Azure OpenAI',
+    ],
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'GB',
+    },
+  };
+
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Victor Johnson',
+    url: 'https://victorjohnson.online',
+    description:
+      'Personal website of Victor Johnson, Senior AI & LLM Engineer specialising in production RAG and GenAI systems.',
+  };
+
   return (
     <html lang="en-GB">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteJsonLd),
+          }}
+        />
+      </head>
       <body
         className={`${figtree.className} bg-neutral-950 text-white antialiased`}
       >

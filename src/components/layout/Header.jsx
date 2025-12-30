@@ -50,7 +50,7 @@ const Header = () => {
 
           {/* Blog (STATIC – must use <a>) */}
           <a
-            href="/blog/"
+            href="https://opendata.blog/"
             className="inline-flex items-center gap-1.5 hover:text-lime-300"
           >
             <FaPenNib className="h-4 w-4" />
@@ -125,7 +125,7 @@ const Header = () => {
 
             {/* Blog – static */}
             <a
-              href="/blog/"
+              href="https://opendata.blog/"
               className="inline-flex items-center gap-2 hover:text-lime-300"
               onClick={() => setMenuOpen(false)}
             >

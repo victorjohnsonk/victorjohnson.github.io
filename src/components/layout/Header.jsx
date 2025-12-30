@@ -29,7 +29,7 @@ const Header = () => {
       }`}
     >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4 md:px-6">
-        {/* 👋 Logo / Name */}
+        {/* Logo */}
         <Link
           href="/"
           className="flex whitespace-nowrap text-2xl font-semibold leading-none text-lime-400"
@@ -37,8 +37,9 @@ const Header = () => {
           Victor Johnson
         </Link>
 
-        {/* 🧭 Desktop Navigation */}
+        {/* Desktop Nav */}
         <nav className="hidden items-center space-x-8 text-base text-lime-400 md:flex">
+          {/* Projects (App Router safe) */}
           <Link
             href="/projects/"
             className="inline-flex items-center gap-1.5 hover:text-lime-300"
@@ -47,13 +48,14 @@ const Header = () => {
             Projects
           </Link>
 
-          <Link
+          {/* Blog (STATIC – must use <a>) */}
+          <a
             href="/blog/"
             className="inline-flex items-center gap-1.5 hover:text-lime-300"
           >
             <FaPenNib className="h-4 w-4" />
             Blog
-          </Link>
+          </a>
 
           <a
             href="https://github.com/victorjohnsonk"
@@ -84,7 +86,7 @@ const Header = () => {
           </a>
         </nav>
 
-        {/* 🍔 Mobile Menu Button */}
+        {/* Mobile Menu Button */}
         <button
           onClick={() => setMenuOpen((prev) => !prev)}
           className="ml-4 flex flex-col items-end justify-center space-y-1 md:hidden"
@@ -108,7 +110,7 @@ const Header = () => {
         </button>
       </div>
 
-      {/* 📱 Mobile Navigation */}
+      {/* Mobile Nav */}
       {menuOpen && (
         <div className="border-t border-neutral-800 bg-neutral-950/95 backdrop-blur-md md:hidden">
           <nav className="flex flex-col items-start space-y-4 px-6 py-5 text-lg text-lime-400">
@@ -121,14 +123,15 @@ const Header = () => {
               Projects
             </Link>
 
-            <Link
+            {/* Blog – static */}
+            <a
               href="/blog/"
               className="inline-flex items-center gap-2 hover:text-lime-300"
               onClick={() => setMenuOpen(false)}
             >
               <FaPenNib className="h-5 w-5" />
               Blog
-            </Link>
+            </a>
 
             <a
               href="https://github.com/victorjohnsonk"

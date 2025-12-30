@@ -33,7 +33,7 @@ export default async function ProjectsFeatured() {
 
           {/* 🧩 View All Projects Card */}
           <Link
-            href="/projects"
+            href="/projects/"
             className="group flex flex-col items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 text-center shadow-sm transition hover:border-lime-400 hover:shadow-md"
           >
             <span className="mb-2 text-lg font-semibold text-lime-400 group-hover:underline">

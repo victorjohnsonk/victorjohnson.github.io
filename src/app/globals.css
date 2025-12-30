@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+a,
+button {
+  @apply cursor-pointer;
+}
+/* Typography tweaks for dark mode */
+.prose pre {
+  background-color: #1a1a1a !important; /* dark gray instead of black */
+  border-radius: 0.5rem;
+  padding: 1rem !important;
+  overflow-x: auto;
+}
+
+.prose code {
+  color: #aef1a8;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+}
+.prose,
+.prose-invert {
+  color: #e5e5e5; /* slightly muted white */
+}
+
+.prose p,
+.prose li,
+.prose span,
+.prose strong,
+.prose em {
+  color: #e5e5e5; /* consistent body color */
+}
+
+/* Keep headings brighter for hierarchy */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: #fafafa;
+}
+
+/* Keep links vibrant */
+.prose a {
+  color: #c7d3b3; /* lime-400 */
+}

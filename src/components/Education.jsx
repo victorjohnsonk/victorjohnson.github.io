@@ -18,7 +18,7 @@ const education = [
     ],
   },
   {
-    degree: 'Bachelor of Technology in Computer Engineering',
+    degree: 'Bachelor of Technology in Computer Science',
     school: 'University of Calicut',
     start: '2013',
     end: '2017',

@@ -141,7 +141,7 @@ export default function Experience() {
                 </div>
 
                 {/* Company */}
-                <p className="text-lime-400 font-medium">Company : {exp.company}</p>
+                <p className="text-lime-400 font-medium">Company - {exp.company}</p>
 
                 {/* Location + Industry */}
                 <p className="text-xs text-zinc-400 italic">
@@ -150,7 +150,7 @@ export default function Experience() {
                     <span className="not-italic text-zinc-500"> | </span>
                   )}
                   {exp.industry && (
-                    <span className="not-italic">Industry: {exp.industry}</span>
+                    <span className="not-italic">Industry - {exp.industry}</span>
                   )}
                 </p>
 

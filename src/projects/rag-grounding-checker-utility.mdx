@@ -1,0 +1,29 @@
+---
+title: 'RAG Grounding Checker Utility'
+date: '2015-01-26'
+thumbnail: '/projects/ai-project.png' # put image under /public/projects/ai-kpi.png
+stack:
+  - Python (FastAPI)
+  - RAG
+  - Grounding
+  - LLM
+  - AI
+github: 'https://github.com/victorjohnsonk/RAG-GroundingCheckerUtility'
+demo: ''
+summary: 'A lightweight, dependency-free utility for evaluating how well LLM or RAG-generated answers are grounded in their retrieved context.'
+isArchived: false
+isFeatured: true
+---
+
+This project provides a lightweight, dependency-free utility for evaluating whether LLM or RAG-generated answers are properly grounded in their retrieved context. 
+It analyzes token overlap to compute grounding scores and highlight unsupported answer segments, making it useful for debugging hallucinations, validating prompts, and monitoring grounding quality in AI pipelines.
+
+---
+
+The RAG Grounding Checker Utility is a lightweight evaluation tool designed to assess how well a generated answer is grounded in its retrieved context. 
+Rather than performing retrieval or text generation itself, the utility focuses purely on grounding evaluation, measuring whether an answer is supported by the provided context. 
+It computes a grounding score between 0 and 1 based on token overlap, highlights unsupported tokens, and can aggregate scores across multiple samples—making it a practical diagnostic layer for Retrieval-Augmented Generation (RAG) and LLM pipelines.
+
+Built to be fast, deterministic, and dependency-free, the tool can be used as a standalone CLI, integrated as a Python module, or embedded as a post-processing step in larger AI workflows. 
+Typical use cases include detecting hallucinations, comparing prompt variants, running regression tests, and performing offline evaluations of generated datasets. 
+While it intentionally avoids semantic reasoning and factual verification, this simplicity makes the utility reliable and easy to adopt for developers who want a clear, transparent signal of grounding quality without additional overhead.

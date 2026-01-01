@@ -76,16 +76,21 @@ export default function Education() {
             {/* Academic Projects (Title Only) */}
             <div className="mt-3">
               <p className="text-sm text-zinc-400 font-medium mb-1">Academic Projects:</p>
-              <ul className="list-disc list-inside space-y-1 text-zinc-300 text-sm">
-                {edu.projects.map((proj, idx) => (
-                  <li key={idx}>
-                    {proj.title}
-                    {proj.year && (
-                      <span className="text-zinc-500 text-xs ml-2">({proj.year})</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <ul className="space-y-1 text-zinc-300 text-sm">
+  {edu.projects.map((proj, idx) => (
+    <li key={idx} className="flex gap-2">
+      <span className="opacity-50">–</span>
+      <span>
+        {proj.title}
+        {proj.year && (
+          <span className="text-zinc-500 text-xs ml-2">
+            ({proj.year})
+          </span>
+        )}
+      </span>
+    </li>
+  ))}
+</ul>
             </div>
           </motion.div>
         ))}

@@ -28,7 +28,14 @@ export default function ProjectCard({ project }) {
         </Link>
       </h3>
 
-      {date && <div className="mb-2 text-sm text-zinc-400">{date}</div>}
+      {date && (
+  <div className="mb-2 text-sm text-zinc-400">
+    {new Date(date).toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    })}
+  </div>
+)}
 
       {summary && <p className="mb-3 text-sm text-zinc-300">{summary}</p>}
 

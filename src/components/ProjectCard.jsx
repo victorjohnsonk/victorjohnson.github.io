@@ -28,12 +28,14 @@ export default function ProjectCard({ project }) {
         </Link>
       </h3>
 
-      {date && (
+     {date && (
   <div className="mb-2 text-sm text-zinc-400">
-    {new Date(date).toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    })}
+    {(() => {
+      const d = new Date(date);
+      const month = d.toLocaleString("en-US", { month: "long" });
+      const year = d.getFullYear();
+      return `${month}, ${year}`;
+    })()}
   </div>
 )}
 

@@ -35,7 +35,14 @@ export default async function ProjectPage({ params }) {
       </Link>
 
       <h1 className="mt-2 text-3xl font-bold text-white">{title}</h1>
-      {date && <p className="mt-1 text-sm text-zinc-500">{date}</p>}
+     {date && (
+  <p className="mt-1 text-sm text-zinc-500">
+    {new Date(date).toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    })}
+  </p>
+)}
 
       {/* Thumbnail (static image only) */}
       {thumbnail && (

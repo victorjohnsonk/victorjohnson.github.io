@@ -2,6 +2,7 @@ import { Figtree } from 'next/font/google';
 import './globals.css';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import Script from 'next/script';
 
 const figtree = Figtree({
   subsets: ['latin'],
@@ -123,6 +124,21 @@ export default function RootLayout({ children }) {
             __html: JSON.stringify(websiteJsonLd),
           }}
         />
+          {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-MEK4W87RJL"
+          strategy="afterInteractive"
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-MEK4W87RJL', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>
       </head>
       <body
         className={`${figtree.className} bg-neutral-950 text-white antialiased`}

@@ -69,7 +69,7 @@ export default async function ProjectPage({ params }) {
             className="inline-flex items-center gap-2 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
           >
             <FaGithub className="h-4 w-4" />
-            GitHub
+            View on GitHub
           </a>
         )}
 

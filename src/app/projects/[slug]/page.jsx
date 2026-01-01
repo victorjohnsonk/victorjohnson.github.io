@@ -37,10 +37,10 @@ export default async function ProjectPage({ params }) {
       <h1 className="mt-2 text-3xl font-bold text-white">{title}</h1>
      {date && (
   <p className="mt-1 text-sm text-zinc-500">
-    {new Date(date).toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    })}
+    {(() => {
+      const d = new Date(date);
+      return `${d.toLocaleString("en-US", { month: "long" })}, ${d.getFullYear()}`;
+    })()}
   </p>
 )}
 

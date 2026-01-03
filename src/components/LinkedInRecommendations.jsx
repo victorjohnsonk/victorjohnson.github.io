@@ -30,10 +30,10 @@ export default function LinkedInRecommendations() {
         {/* Left */}
         <div>
           <h3 className="text-lg font-semibold text-white">
-            What colleagues and managers say about my work
+            See what my peers and managers say about my work
           </h3>
           <p className="mt-1 text-sm text-zinc-300">
-            Verified LinkedIn recommendations from real projects
+            View verified LinkedIn recommendations
           </p>
         </div>
 

@@ -15,7 +15,6 @@ export default function LinkedInRecommendations() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="
-          group
           flex items-center justify-between gap-4
           rounded-xl
           border border-lime-400/60
@@ -24,7 +23,7 @@ export default function LinkedInRecommendations() {
           shadow-sm
         "
       >
-        {/* Left Content */}
+        {/* Left content */}
         <div>
           <h3 className="text-lg font-semibold text-white">
             What my colleagues say about me
@@ -34,7 +33,7 @@ export default function LinkedInRecommendations() {
           </p>
         </div>
 
-        {/* Right Icon */}
+        {/* Right icon */}
         <div className="flex items-center gap-2 text-lime-400">
           <FaLinkedin className="h-7 w-7" />
           <span className="text-sm font-medium hidden sm:inline">

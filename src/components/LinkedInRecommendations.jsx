@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaLinkedin } from 'react-icons/fa';
 
 export default function LinkedInRecommendations() {
   return (
@@ -17,14 +16,18 @@ export default function LinkedInRecommendations() {
         className="
           flex flex-col gap-4
           rounded-xl
-          border border-lime-400/60
+          border border-lime-400/50
           bg-lime-400/10
           px-6 py-5
           shadow-sm
+          transition duration-300
 
           sm:flex-row
           sm:items-center
           sm:justify-between
+
+          md:opacity-90
+          md:hover:opacity-100
         "
       >
         {/* Left */}
@@ -42,25 +45,19 @@ export default function LinkedInRecommendations() {
           Endorsed by peers, managers & cross-functional teams
         </div>
 
-        {/* Right */}
-        <div className="flex items-center gap-2 text-lime-400 flex-shrink-0">
-          {/* Mobile: icon only */}
-          <FaLinkedin className="h-7 w-7 md:hidden" />
-
-          {/* Desktop: LinkedIn wordmark */}
+        {/* Right – your LinkedIn SVG */}
+        <div className="flex items-center gap-2 font-semibold text-lime-400 flex-shrink-0">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 135 34"
-            className="hidden md:block h-6 w-auto fill-current"
-            aria-label="LinkedIn"
+            width="16"
+            height="16"
+            fill="currentColor"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
           >
-            <path d="M4 34H0V11h4v23zM2 9C.9 9 0 8.1 0 7s.9-2 2-2 2 .9 2 2-.9 2-2 2zM34 34h-4V22.2c0-2.8-.1-6.4-4-6.4-4 0-4.6 3.1-4.6 6.2V34h-4V11h3.8v3.1h.1c.5-1 2.6-3.1 5.5-3.1 5.9 0 7 3.9 7 8.9V34z" />
-            <path d="M51 0h84c2.2 0 4 1.8 4 4v26c0 2.2-1.8 4-4 4H51c-2.2 0-4-1.8-4-4V4c0-2.2 1.8-4 4-4z" />
-            <path
-              fill="#000"
-              d="M68 27h-4V14h4v13zm-2-15c-1.3 0-2-.9-2-2s.7-2 2-2 2 .9 2 2-.7 2-2 2zm21 15h-4v-6.6c0-1.7-.6-2.9-2.2-2.9-1.2 0-1.9.8-2.2 1.6-.1.3-.1.7-.1 1.1V27h-4V14h3.8v1.8h.1c.5-.9 1.9-2.2 4.5-2.2 3.2 0 5.6 2.1 5.6 6.7V27z"
-            />
+            <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z" />
           </svg>
+          <span>LinkedIn</span>
         </div>
       </motion.a>
     </section>

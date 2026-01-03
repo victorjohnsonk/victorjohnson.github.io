@@ -35,9 +35,9 @@ export default function LinkedInRecommendations() {
           <h3 className="text-lg font-semibold text-white">
             See what my peers and managers say about my work
           </h3>
-          <p className="mt-1 text-sm text-zinc-300">
-            View verified LinkedIn recommendations
-          </p>
+         <p className="mt-1 text-sm text-zinc-300">
+          View verified LinkedIn recommendations <span className="ml-1">↗</span>
+        </p>
         </div>
 
         {/* Center – desktop trust cue */}

@@ -36,7 +36,7 @@ export default function LinkedInRecommendations() {
             See what my peers and managers say about my work
           </h3>
          <p className="mt-1 text-sm text-zinc-300">
-          View verified LinkedIn recommendations <span className="ml-1">↗</span>
+          View verified LinkedIn recommendations<span className="ml-1">↗</span>
         </p>
         </div>
 

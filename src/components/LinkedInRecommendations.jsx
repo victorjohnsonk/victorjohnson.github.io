@@ -15,28 +15,37 @@ export default function LinkedInRecommendations() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="
-          flex items-center justify-between gap-4
+          flex flex-col gap-4
           rounded-xl
           border border-lime-400/60
           bg-lime-400/10
           px-6 py-5
           shadow-sm
+
+          sm:flex-row
+          sm:items-center
+          sm:justify-between
         "
       >
-        {/* Left content */}
+        {/* Left */}
         <div>
           <h3 className="text-lg font-semibold text-white">
-            What my colleagues say about me
+            What colleagues and managers say about my work
           </h3>
           <p className="mt-1 text-sm text-zinc-300">
-            View recommendations on LinkedIn
+            Verified LinkedIn recommendations from real projects
           </p>
         </div>
 
-        {/* Right icon */}
-        <div className="flex items-center gap-2 text-lime-400">
+        {/* Center – desktop trust cue */}
+        <div className="hidden md:block text-sm text-zinc-400 italic text-center px-6">
+          Endorsed by peers, managers & cross-functional teams
+        </div>
+
+        {/* Right */}
+        <div className="flex items-center gap-2 text-lime-400 flex-shrink-0">
           <FaLinkedin className="h-7 w-7" />
-          <span className="text-sm font-medium hidden sm:inline">
+          <span className="text-sm font-medium">
             View
           </span>
         </div>

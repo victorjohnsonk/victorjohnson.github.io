@@ -1,4 +1,5 @@
 import Hero from '@/components/Hero';
+import Certificate from '@/components/LinkedInRecommendations';
 import ProjectsFeatured from '@/components/ProjectsFeatured';
 import Skills from '@/components/Skills';
 import Experience from '@/components/Experience';
@@ -10,6 +11,7 @@ const page = () => {
   return (
     <div className="space-y-5">
       <Hero />
+      <LinkedInRecommendations />
       <Skills />
       {/* <ProjectsFeatured /> */}
       <Experience />

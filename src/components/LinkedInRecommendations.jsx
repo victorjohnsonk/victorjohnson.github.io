@@ -44,11 +44,11 @@ export default function LinkedInRecommendations() {
 
         {/* Right */}
         <div className="flex items-center gap-2 text-lime-400 flex-shrink-0">
-          <FaLinkedin className="h-7 w-7" />
-          <span className="text-sm font-medium">
-            View
-          </span>
-        </div>
+        <FaLinkedin className="h-7 w-7" />
+        <span className="text-sm font-semibold tracking-wide">
+          LinkedIn
+        </span>
+      </div>
       </motion.a>
     </section>
   );

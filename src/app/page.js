@@ -11,12 +11,12 @@ const page = () => {
   return (
     <div className="space-y-5">
       <Hero />
-      <LinkedInRecommendations />
       <Skills />
       {/* <ProjectsFeatured /> */}
       <Experience />
-      <Certificate />
+      <LinkedInRecommendations />
       <Education />
+      <Certificate />
     </div>
   );
 };

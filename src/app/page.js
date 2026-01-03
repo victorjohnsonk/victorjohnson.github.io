@@ -1,5 +1,5 @@
 import Hero from '@/components/Hero';
-import Certificate from '@/components/LinkedInRecommendations';
+import LinkedInRecommendations from '@/components/LinkedInRecommendations';
 import ProjectsFeatured from '@/components/ProjectsFeatured';
 import Skills from '@/components/Skills';
 import Experience from '@/components/Experience';

@@ -19,7 +19,7 @@ AI / LLM Systems (Primary):
   Built LLM-powered intelligent search, chatbots, and ranking workflows used in internal products
   Designed and implemented LLM evaluation frameworks (precision/recall, F1, BLEU, ROUGE, relevance & faithfulness metrics) to measure quality and reduce hallucinations
   Implemented prompt strategies, grounding logic, guardrails, and output validation to improve reliability and safety in live systems
-  Fine-tuned transformer and LLM models on domain-specific data to improve retrieval accuracy and contextual relevance
+  Applied parameter-efficient model adaptation approaches (LoRA) using domain-specific data to support retrieval and contextual understanding.
   Built scalable data preparation pipelines (cleaning, tokenization, chunking, embeddings) for training and fine-tuning
   Ran A/B tests and benchmarks across models, embeddings, retrievers, and prompt variants to optimize quality, latency, and cost
 
@@ -66,7 +66,7 @@ Analytics Platforms & Visualization
     end: 'Dec 2018',
     location: 'Bengaluru, India · On-site',
     description: `
-  Built an early semantic search engine using Elasticsearch and Python (Flask), supporting information retrieval use cases
+  Developed an Elasticsearch-based search application leveraging BM25 relevance scoring, inverted indexes, and NLP techniques for information retrieval.
   Developed automated ETL pipelines using Apache Airflow
   Contributed to Spark and Kafka streaming workflows for real-time telemetry data processing
   Built RPA workflows to automate SAP-based maintenance data handling`,

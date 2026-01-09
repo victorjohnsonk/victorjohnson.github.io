@@ -5,6 +5,15 @@ import { motion } from 'framer-motion';
 import { HiArrowTopRightOnSquare } from 'react-icons/hi2';
 
 const certificates = [
+  {
+    certification: 'AI Security & Governance CertificationI',
+    issuedBy: 'Securiti',
+    validFrom: 'Jan 2026',
+    validTo: 'Jan 2028',
+    skills: ['Artificial Intelligence (AI)', 'Governance', 'AI Security'],
+    credentialUrl:
+      'https://education.securiti.ai/verification/144EFD399-144EFD208-13ECBB641/',
+  },
   // LinkedIn Learning
   {
     certification: 'Data Versioning, Lineage, and Quality Monitoring for AI',

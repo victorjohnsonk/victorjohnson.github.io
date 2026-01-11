@@ -4,10 +4,6 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiArrowTopRightOnSquare } from 'react-icons/hi2';
 
-/* =======================
-   CERTIFICATE DATA
-======================= */
-
 const certificates = [
   {
     certification: 'Agentic AI Design Patterns for GenAI and Predictive AI',
@@ -35,7 +31,7 @@ const certificates = [
       'https://www.linkedin.com/learning/certificates/dbdf3a78e651974d0a92efcd9cadd9457b6adaef3f4034204e5f9657228f0e7a',
   },
   {
-    certification: 'AI Security & Governance Certification I',
+    certification: 'AI Security & Governance CertificationI',
     issuedBy: 'Securiti',
     validFrom: 'Jan 2026',
     validTo: 'Jan 2028',
@@ -43,6 +39,8 @@ const certificates = [
     credentialUrl:
       'https://education.securiti.ai/verification/144EFD399-144EFD208-13ECBB641/',
   },
+
+  // LinkedIn Learning
   {
     certification: 'Data Versioning, Lineage, and Quality Monitoring for AI',
     issuedBy: 'LinkedIn',
@@ -98,13 +96,163 @@ const certificates = [
     credentialUrl:
       'https://www.linkedin.com/learning/certificates/546d59112472bfad28484b00c23da5c581a880989261507a3a6660af8bd4ff8e',
   },
+  {
+    certification:
+      'Working with Data: Engineering, Integration, and MLOps for AI',
+    issuedBy: 'LinkedIn',
+    validFrom: 'Dec 2025',
+    skills: [
+      'Large Language Model Operations (LLMOps)',
+      'Vector Databases',
+      'MLOps',
+      'Artificial Intelligence (AI)',
+    ],
+    credentialUrl:
+      'https://www.linkedin.com/learning/certificates/1967558dc71f5ee15d2ae42b5b9260e8e268836d5715abbc55d403e21351a12d',
+  },
+
+  // Hugging Face
+  {
+    certification: 'AI Agents Fundamentals',
+    issuedBy: 'Hugging Face',
+    validFrom: 'Oct 2025',
+    credentialId: 'victor-johnson',
+    skills: [],
+    credentialUrl:
+      'https://huggingface.co/datasets/agents-course/certificates/resolve/main/certificates/victor-johnson/2025-10-13.png',
+  },
+
+  // Alteryx
+  {
+    certification: 'Alteryx Auto Insights Micro-Credential',
+    issuedBy: 'Alteryx',
+    validFrom: 'Oct 2025',
+    validTo: 'Oct 2027',
+    credentialId: '30b212a6-8f6b-4a8d-b44a-d19004b4ab08',
+    skills: [],
+    credentialUrl:
+      'https://www.credly.com/badges/30b212a6-8f6b-4a8d-b44a-d19004b4ab08/public_url',
+  },
+  {
+    certification: 'Alteryx Designer Core Certified',
+    issuedBy: 'Alteryx',
+    validFrom: 'Oct 2025',
+    validTo: 'Oct 2027',
+    credentialId: 'fa2d1b38-ef83-402b-ab21-e21a91d3e4a3',
+    skills: [],
+    credentialUrl:
+      'https://www.credly.com/badges/fa2d1b38-ef83-402b-ab21-e21a91d3e4a3/public_url',
+  },
+  {
+    certification:
+      'Alteryx Machine Learning Fundamentals Micro-Credential',
+    issuedBy: 'Alteryx',
+    validFrom: 'Oct 2025',
+    validTo: 'Oct 2027',
+    credentialId: 'af37e6ea-67cb-4b9e-9b8d-ff94afb292a3',
+    skills: [],
+    credentialUrl:
+      'https://www.credly.com/badges/af37e6ea-67cb-4b9e-9b8d-ff94afb292a3/public_url',
+  },
+
+  // n8n
+  {
+    certification: 'n8n Course Level 1',
+    issuedBy: 'n8n',
+    validFrom: 'Oct 2025',
+    credentialId: '4916639a1c6dddf0372d1f9fcf29623c',
+    skills: [],
+    credentialUrl:
+      'https://community.n8n.io/badges/104/completed-n8n-course-level-1?username=victorjohnson',
+  },
+  {
+    certification: 'n8n Course Level 2',
+    issuedBy: 'n8n',
+    validFrom: 'Oct 2025',
+    credentialId: '4916639a1c6dddf0372d1f9fcf29623c',
+    skills: [],
+    credentialUrl:
+      'https://community.n8n.io/badges/105/completed-n8n-course-level-2?username=victorjohnson',
+  },
+
+  // Databricks
+  {
+    certification:
+      'Academy Accreditation - Databricks Fundamentals',
+    issuedBy: 'Databricks',
+    validFrom: 'Sep 2025',
+    skills: ['Azure Databricks'],
+    credentialUrl:
+      'https://credentials.databricks.com/82781fa1-ecc6-4856-a236-186dcecee27a#acc.MoK0uxXz',
+  },
+  {
+    certification:
+      'Academy Accreditation - Generative AI Fundamentals',
+    issuedBy: 'Databricks',
+    validFrom: 'Sep 2025',
+    skills: ['Azure Databricks'],
+    credentialUrl:
+      'https://credentials.databricks.com/5a74e3c5-3569-4002-a1bb-79c087dc9b7d#acc.Zi1PBLKr',
+  },
+
+  // Oracle
+  {
+    certification:
+      'Oracle Cloud Infrastructure 2025 Certified AI Foundations Associate',
+    issuedBy: 'Oracle',
+    validFrom: 'Sep 2025',
+    validTo: 'Sep 2027',
+    credentialId: '1Z0-1122-25',
+    skills: ['Machine Learning', 'Artificial Intelligence (AI)'],
+    credentialUrl:
+      'https://catalog-education.oracle.com/ords/certview/sharebadge?id=1721C59E2FC0174426F0471B05B617123247EDA5B52D715C9DDE2310D37114B7',
+  },
+
+  // Udemy
+  {
+    certification:
+      'AI-Driven Market Analysis: Predict & Profit with ML Models',
+    issuedBy: 'Udemy',
+    validFrom: 'Oct 2025',
+    skills: ['Machine Learning'],
+    credentialUrl:
+      'https://www.udemy.com/certificate/UC-acf45108-2f17-40c8-bc0a-67c4b09e2c0f/',
+  },
+  {
+    certification:
+      'Expert Certificate: Marketing Data Analysis & Data Analytics',
+    issuedBy: 'Udemy',
+    validFrom: 'Oct 2025',
+    skills: ['Machine Learning'],
+    credentialUrl:
+      'https://www.udemy.com/certificate/UC-208070e5-bee6-4c72-8b27-9e4717f9140a/',
+  },
+  {
+    certification:
+      'NLP in Python: Probability Models, Statistics, Text Analysis',
+    issuedBy: 'Udemy',
+    validFrom: 'Oct 2025',
+    skills: [],
+    credentialUrl:
+      'https://www.udemy.com/certificate/UC-051aad05-0f90-4511-9ee0-339092370fba/',
+  },
+  {
+    certification:
+      'NotebookLM Mastery: Organize, Analyze, and Optimize with AI',
+    issuedBy: 'Udemy',
+    validFrom: 'Oct 2025',
+    skills: [],
+    credentialUrl:
+      'https://www.udemy.com/certificate/UC-5a7033f8-4193-4290-a6bb-53c9f5905644/',
+  },
 ];
+
 
 /* =======================
    COMPONENT
 ======================= */
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 12;
 
 export default function Certificate() {
   const [page, setPage] = useState(1);

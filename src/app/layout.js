@@ -21,6 +21,7 @@ export const metadata = {
     'Generative AI Engineer',
     'Production RAG',
     'Large Language Models',
+    'Data Scientist',
     'Retrieval-Augmented Generation',
     'Semantic Search',
     'Vector Databases',
@@ -95,6 +96,7 @@ export default function RootLayout({ children }) {
       'Machine Learning',
       'MLOps',
       'Azure OpenAI',
+      'Data Science'
     ],
     address: {
       '@type': 'PostalAddress',

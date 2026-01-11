@@ -16,7 +16,7 @@ const Hero = () => {
           <br className="hidden lg:block" />
           I own LLM systems end-to-end: ingestion, embeddings, retrieval, prompt orchestration, evaluation, deployment, and monitoring, with a focus on reliability, performance, and cost in real products.{' '}
           <br className="hidden lg:block" />
-          Core expertise: LLMs, RAG, vector search, LLM evaluation, Python, Azure OpenAI, Spark, MLOps etc.
+          Core expertise: LLMs, RAG, Vector search, LLM evaluation, Python, Azure OpenAI, Spark, MLOps etc.
         </p>
 
         {/* Availability */}

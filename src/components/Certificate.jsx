@@ -5,6 +5,30 @@ import { motion } from 'framer-motion';
 import { HiArrowTopRightOnSquare } from 'react-icons/hi2';
 
 const certificates = [
+   {
+    certification: 'Agentic AI Design Patterns for GenAI and Predictive AI',
+    issuedBy: 'LinkedIn',
+    validFrom: 'Jan 2026',
+    skills: [],
+    credentialUrl:
+      'https://www.linkedin.com/learning/certificates/fc88214d34d003f54a1f4e7cae570921f5e947afba368af4898cd3944ead5b22',
+  },
+   {
+    certification: 'Azure OpenAI: Advanced Topics',
+    issuedBy: 'LinkedIn',
+    validFrom: 'Jan 2026',
+    skills: [],
+    credentialUrl:
+      'https://www.linkedin.com/learning/certificates/4906d2da936250e1cfd1f6de5436329de8864d20482adc066c709afe0a5012d8',
+  },
+   {
+    certification: 'ISO/IEC 42001:2023: Understanding and Implementing the Artificial Intelligence Management System (AIMS) Standard',
+    issuedBy: 'LinkedIn',
+    validFrom: 'Jan 2026',
+    skills: [],
+    credentialUrl:
+      'https://www.linkedin.com/learning/certificates/dbdf3a78e651974d0a92efcd9cadd9457b6adaef3f4034204e5f9657228f0e7a',
+  },
   {
     certification: 'AI Security & Governance CertificationI',
     issuedBy: 'Securiti',

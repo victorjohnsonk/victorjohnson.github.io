@@ -12,11 +12,11 @@ const Hero = () => {
           Senior AI / LLM Engineer | Production RAG & LLM Systems | Data Science | Azure, Python
         </p>
         <p className="mt-5">
-          Senior AI / LLM Engineer with 7+ years of experience building production LLM and GenAI systems, including RAG, intelligent search, and LLM-powered applications in Azure.{' '}
+          Senior AI / LLM Engineer with 7+ years in ML/data and 2+ years specializing in production LLM/GenAI systems, including RAG, intelligent search, and LLM-powered applications in Azure. {' '}
           <br className="hidden lg:block" />
-          I own LLM systems end-to-end: ingestion, embeddings, retrieval, prompt orchestration, evaluation, deployment, and monitoring, with a focus on reliability, performance, and cost in real products.{' '}
+           I own LLM systems end-to-end: ingestion, embeddings, retrieval, prompt orchestration, evaluation, deployment, and monitoring - focused on reliability, performance, and cost in real products. {' '}
           <br className="hidden lg:block" />
-          Core expertise: LLMs, RAG, Vector search, LLM evaluation, Python, Azure OpenAI, Spark, MLOps etc.
+          Core: LLMs, RAG, vector search, LLM evaluation, Python, Azure OpenAI, Spark, MLOps, etc.
         </p>
 
         {/* Availability */}

@@ -14,7 +14,7 @@ export const metadata = {
   title:
     'Victor Johnson | Senior AI & LLM Engineer | Production RAG & GenAI Systems',
   description:
-    'Senior AI & LLM Engineer with 7+ years of experience building production-grade LLM and Generative AI systems, including RAG, semantic search, and LLM-powered applications on Microsoft Azure. Specialist in end-to-end LLM systems: ingestion, embeddings, vector search, prompt orchestration, evaluation, deployment, and monitoring.',
+    'Senior AI / LLM Engineer with 7+ years in ML/data and 2+ years specializing in production LLM/GenAI systems, including RAG, intelligent search, and LLM-powered applications in Azure. I own LLM systems end-to-end: ingestion, embeddings, retrieval, prompt orchestration, evaluation, deployment, and monitoring - focused on reliability, performance, and cost in real products. Core: LLMs, RAG, vector search, LLM evaluation, Python, Azure OpenAI, Spark, MLOps. ',
   keywords: [
     'Senior AI Engineer',
     'LLM Engineer',

@@ -12,11 +12,16 @@ const figtree = Figtree({
 
 export const metadata = {
   title:
-    'Victor Johnson | Senior AI & LLM Engineer | Production RAG & GenAI Systems',
+    'Victor Johnson | Data Scientist / AI Engineer | Production RAG & GenAI Systems',
   description:
-    'Senior AI / LLM Engineer with 7+ years in ML/data and 2+ years specializing in production LLM/GenAI systems, including RAG, intelligent search, and LLM-powered applications in Azure. I own LLM systems end-to-end: ingestion, embeddings, retrieval, prompt orchestration, evaluation, deployment, and monitoring - focused on reliability, performance, and cost in real products. Core: LLMs, RAG, vector search, LLM evaluation, Python, Azure OpenAI, Spark, MLOps. ',
+    'Data Scientist / AI Engineer with 7+ years in ML/data and 2+ years specializing in production LLM/GenAI systems, including RAG, intelligent search, and LLM-powered applications in Azure. I own LLM systems end-to-end: ingestion, embeddings, retrieval, prompt orchestration, evaluation, deployment, and monitoring - focused on reliability, performance, and cost in real products. Core: LLMs, RAG, vector search, LLM evaluation, Python, Azure OpenAI, Spark, MLOps. ',
   keywords: [
-    'Senior AI Engineer',
+    'Data Science',
+    'Data Scientist',
+    'AI',
+    'AI Engineer',
+    'Artificial Intelligence',
+    'Artificial Intelligence Engineer',
     'LLM Engineer',
     'Generative AI Engineer',
     'Production RAG',
@@ -40,24 +45,24 @@ export const metadata = {
     locale: 'en_GB',
     url: 'https://victorjohnson.online',
     title:
-      'Victor Johnson | Senior AI & LLM Engineer | Production RAG & GenAI',
+      'Victor Johnson | Data Scientist / AI Engineer | Production RAG & GenAI',
     description:
-      'Senior AI & LLM Engineer specialising in production RAG, LLM evaluation, vector search, and GenAI systems on Azure.',
+      'Data Scientist / AI Engineer specialising in production RAG, LLM evaluation, vector search, and GenAI systems on Azure.',
     images: [
       {
         url: '/vj-photo.png',
         width: 1200,
         height: 630,
-        alt: 'Victor Johnson | Senior AI & LLM Engineer',
+        alt: 'Victor Johnson | Data Scientist / AI Engineer',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title:
-      'Victor Johnson | Senior AI & LLM Engineer | Production RAG & GenAI',
+      'Victor Johnson | Data Scientist / AI Engineer | Production RAG & GenAI',
     description:
-      'Senior AI & LLM Engineer building production-grade RAG, LLM, and GenAI systems on Azure.',
+      'Data Scientist / AI Engineer building production-grade RAG, LLM, and GenAI systems on Azure.',
     images: ['/vj-photo.png'],
   },
   alternates: {
@@ -75,9 +80,9 @@ export default function RootLayout({ children }) {
     name: 'Victor Johnson',
     url: 'https://victorjohnson.online',
     image: 'https://victorjohnson.online/vj-photo.png',
-    jobTitle: 'Senior AI & LLM Engineer',
+    jobTitle: 'Data Scientist / AI Engineer',
     description:
-      'Senior AI & LLM Engineer specialising in production RAG, LLM systems, semantic search, and Generative AI on Microsoft Azure.',
+      'Data Scientist / AI Engineer specialising in production RAG, LLM systems, semantic search, and Generative AI on Microsoft Azure.',
     sameAs: [
       'https://www.linkedin.com/in/victorjohnsonk',
       'https://github.com/victorjohnsonk',
@@ -110,7 +115,7 @@ export default function RootLayout({ children }) {
     name: 'Victor Johnson',
     url: 'https://victorjohnson.online',
     description:
-      'Personal website of Victor Johnson, Senior AI & LLM Engineer specialising in production RAG and GenAI systems.',
+      'Personal website of Victor Johnson, Data Scientist / AI Engineer specialising in production RAG and GenAI systems.',
   };
 
   return (
